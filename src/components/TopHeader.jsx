@@ -5,21 +5,71 @@ import { useGameState } from "../context/GameStateContext";
 export function TopHeader() {
   const { activeView, navigateTo, xp, streakDays, soundEnabled, toggleSound, profile, currentMissionId, logout } = useGameState();
 
-  const getBreadcrumb = () => {
-    switch (activeView) {
-      case "dashboard":
-        return "Dashboard";
-      case "quest_map":
-        return "Python quest";
-      case "mission_lab":
-        return `Python quest > Mission ${currentMissionId}`;
-      case "achievements":
-        return "Achievements";
-      case "profile":
-        return "My profile";
-      default:
-        return "Dashboard";
+  const renderBreadcrumbs = () => {
+    if (activeView === "dashboard") {
+      return <span className="font-semibold text-[#253D32]">Dashboard</span>;
     }
+    if (activeView === "quest_map") {
+      return <span className="font-semibold text-[#253D32]">The Python Expedition</span>;
+    }
+    if (activeView === "undersea_reef") {
+      return (
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => navigateTo("quest_map")}
+            className="hover:text-[#172E26] hover:underline transition-colors"
+          >
+            The Python Expedition
+          </button>
+          <ChevronRight className="w-3 h-3 text-[#9EB0A5]" />
+          <span className="font-semibold text-[#253D32]">Undersea Reef</span>
+        </div>
+      );
+    }
+    if (activeView === "mission_lab") {
+      if (currentMissionId === 1 || currentMissionId === 2) {
+        return (
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => navigateTo("quest_map")}
+              className="hover:text-[#172E26] hover:underline transition-colors"
+            >
+              The Python Expedition
+            </button>
+            <ChevronRight className="w-3 h-3 text-[#9EB0A5]" />
+            <button
+              onClick={() => navigateTo("undersea_reef")}
+              className="hover:text-[#172E26] hover:underline transition-colors"
+            >
+              Undersea Reef
+            </button>
+            <ChevronRight className="w-3 h-3 text-[#9EB0A5]" />
+            <span className="font-semibold text-[#253D32]">
+              Mission {currentMissionId}: {currentMissionId === 1 ? "First Day" : "Identity"}
+            </span>
+          </div>
+        );
+      }
+      return (
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => navigateTo("quest_map")}
+            className="hover:text-[#172E26] hover:underline transition-colors"
+          >
+            The Python Expedition
+          </button>
+          <ChevronRight className="w-3 h-3 text-[#9EB0A5]" />
+          <span className="font-semibold text-[#253D32]">Mission {currentMissionId}</span>
+        </div>
+      );
+    }
+    if (activeView === "achievements") {
+      return <span className="font-semibold text-[#253D32]">Achievements</span>;
+    }
+    if (activeView === "profile") {
+      return <span className="font-semibold text-[#253D32]">My profile</span>;
+    }
+    return <span className="font-semibold text-[#253D32]">Dashboard</span>;
   };
 
   const handleLogout = () => {
@@ -39,9 +89,7 @@ export function TopHeader() {
           Your learning journey
         </button>
         <ChevronRight className="w-3.5 h-3.5 text-[#9EB0A5]" />
-        <span className="font-semibold text-[#253D32]">
-          {getBreadcrumb()}
-        </span>
+        {renderBreadcrumbs()}
       </div>
 
       {/* Stats and Profile Badges */}

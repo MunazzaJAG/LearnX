@@ -2,88 +2,100 @@ export const LEVELS_DATA = [
   {
     level: 1,
     title: "FIRST DAY",
-    subtitle: "Make the terminal respond",
+    subtitle: "print(), strings, and comments",
     chapter: "CHAPTER 01 · THE AWAKENING",
     biome: "Ocean Teal",
     biomeKey: "ocean",
     biomeName: "Undersea Reef",
-    pythonDocTopic: "Built-in Functions (print) & Syntax Standards (PEP 8 Comments)",
-    bloomsTaxonomy: "REMEMBER / UNDERSTAND",
-    story: "You arrive at the NEXA Ocean Research Hub. The main terminal screen is completely blank. NOVA says: 'Let's start simple. Make the terminal respond so we know communication is restored.'",
-    teach: "The `print()` function outputs text to the standard output terminal. Text inside quotes is a String (`str`). Lines starting with `#` are comments ignored by the Python interpreter.",
-    codeTemplate: "# Print welcome message\nprint(\"Welcome to NEXA!\")",
-    challenge: "Write a line of Python code that outputs exact text: Welcome to NEXA!",
-    expectedOutput: "Welcome to NEXA!",
+    pythonDocTopic: "Built-in Functions (print), Strings (str) & Comments (#)",
+    bloomsTaxonomy: "REMEMBER / UNDERSTAND / APPLY",
+    story: "You arrive at the NEXA Ocean Research Hub. The terminal is blank. NOVA, your companion, asks you to send the first message to the system.",
+    teach: "Python gives instructions to a computer. The print() function displays information on the screen. Text is written inside quotation marks. A comment begins with # and is ignored when Python runs the program.",
+    codeTemplate: "# First message to NEXA\nprint(\"Welcome to NEXA\")\nprint(\"System Status: Online\")\n# This is a comment",
+    challenge: "Restore communication with the NEXA Ocean Research Hub by sending your first Python messages.",
+    expectedOutput: "Welcome to NEXA\nSystem Status: Online",
     hints: [
-      "Hint 1: Use the built-in print() function.",
-      "Hint 2: Surround text inside quotes like \"Welcome to NEXA!\".",
-      "Hint 3: print(\"Welcome to NEXA!\")"
+      "Hint 1: Use print(\"...\") to display text on the terminal screen.",
+      "Hint 2: Enclose text in quotation marks, like \"Welcome to NEXA\".",
+      "Hint 3: Lines starting with # are comments and will not appear in the terminal output."
     ],
     rewardXP: 50,
-    badge: { id: "first_line", name: "First Line", icon: "🌊", description: "Make the terminal respond. Complete mission 1: first day." },
+    badge: { id: "first_line", name: "First Line", icon: "🌊", description: "Make the terminal speak. Complete mission 1: first day." },
     novaTip: "Every line begins with curiosity. Let's light up this console.",
     subLevels: [
       {
         id: 1,
-        title: "Reef Sonar Calibration",
-        type: "game",
-        description: "Align the ocean research hub's hydrophone sonar array to detect terminal frequencies."
+        title: "Predict the Transmission",
+        type: "analyze",
+        description: "Trace short Python snippets and predict the output before running."
       },
       {
         id: 2,
-        title: "Awaken the Console",
-        type: "code",
-        description: "Execute your first Python print statement to output the official greeting."
+        title: "Repair the Broken Terminal",
+        type: "apply",
+        description: "Diagnose and fix syntax errors in a malfunctioning terminal script."
       },
       {
         id: 3,
-        title: "Multi-line Protocol",
-        type: "mastery",
-        description: "Format multi-line transmission telemetry into the console."
+        title: "Write Your First Transmission",
+        type: "apply",
+        description: "Compose custom Python statements with your explorer name and comments."
+      },
+      {
+        id: 4,
+        title: "Boss Battle: Restore NEXA",
+        type: "create",
+        description: "Write three print statements to revive the NEXA Ocean Research Hub."
       }
     ]
   },
   {
     level: 2,
     title: "IDENTITY",
-    subtitle: "Establish developer credentials",
+    subtitle: "Variables and basic data types",
     chapter: "CHAPTER 01 · THE AWAKENING",
     biome: "Ocean Teal",
     biomeKey: "ocean",
     biomeName: "Undersea Reef",
-    pythonDocTopic: "Built-in Types (str, int, float, bool) & Variable Assignment",
-    bloomsTaxonomy: "REMEMBER / UNDERSTAND / APPLY",
-    story: "The terminal responds, but NEXA's registry doesn't know who you are. NOVA needs you to bind your credentials into system memory.",
-    teach: "Variables store data values in memory. Python automatically detects types: Strings (`\"Alex\"`), Integers (`18`), Floats (`98.6`), and Booleans (`True`/`False`). Variables are assigned using `=`. Variable names should follow snake_case according to PEP 8.",
-    codeTemplate: "name = \"Alex\"\nage = 18\nrole = \"Developer\"\ndeveloper_status = True\n\nprint(name)\nprint(role)",
-    challenge: "Assign your name to `name` and role 'Developer' to `role`, then print both.",
-    expectedOutput: "Alex\nDeveloper",
+    pythonDocTopic: "Built-in Types (str, int, float, bool) & Variable Assignment (=)",
+    bloomsTaxonomy: "REMEMBER / UNDERSTAND / APPLY / CREATE",
+    story: "The terminal is online, but NEXA cannot identify its explorer. Save your player details in variables to create an identity card.",
+    teach: "Variables store data values in memory using the assignment operator =. Python recognizes strings (str), integers (int), decimals (float), and booleans (bool). Print stored values by passing variable names to print().",
+    codeTemplate: "name = \"Alex\"\nage = 18\nxp = 50\nis_explorer = True\n\nprint(\"Name:\", name)\nprint(\"Age:\", age)\nprint(\"XP:\", xp)\nprint(\"Explorer:\", is_explorer)",
+    challenge: "Save your player details in variables to create an identity card and display them with clear labels.",
+    expectedOutput: "Name: Alex\nAge: 18\nXP: 50\nExplorer: True",
     hints: [
-      "Hint 1: Create a variable using the '=' operator.",
-      "Hint 2: Put string values inside quotes like \"Alex\" and \"Developer\".",
-      "Hint 3: Use print(name) then print(role)."
+      "Hint 1: Use the '=' operator to store data, like name = \"Alex\".",
+      "Hint 2: Text uses quotes (\"Alex\"), whole numbers don't (18), and booleans are True or False.",
+      "Hint 3: Use print(\"Label:\", variable_name) to display formatted values."
     ],
-    rewardXP: 75,
-    badge: { id: "identity_created", name: "Identity Created", icon: "🆔", description: "Establish developer credentials. Complete mission 2: identity." },
+    rewardXP: 50,
+    badge: { id: "identity_found", name: "Identity Found", icon: "🆔", description: "Save player details in variables to create an identity card. Complete mission 2: identity." },
     novaTip: "Every developer has a story. Let's give yours a name and role in NEXA.",
     subLevels: [
       {
         id: 1,
-        title: "Memory Packet Matching",
-        type: "game",
-        description: "Pair data types (str, int, bool) to their respective memory storage registers."
+        title: "Recover the Explorer Data",
+        type: "analyze",
+        description: "Inspect incomplete explorer data and predict variable assignments."
       },
       {
         id: 2,
-        title: "Register Explorer Credentials",
-        type: "code",
-        description: "Define variable bindings for your name and role, and output them."
+        title: "Match the Data Type",
+        type: "understand",
+        description: "Classify sample Python values into str, int, float, and bool types."
       },
       {
         id: 3,
-        title: "Type Verification Protocol",
-        type: "mastery",
-        description: "Inspect runtime variable data structures."
+        title: "Build Your Identity Card",
+        type: "apply",
+        description: "Write Python code storing name, language, and starting XP."
+      },
+      {
+        id: 4,
+        title: "Boss Battle: Identity Found",
+        type: "create",
+        description: "Construct and test a full Explorer Identity Card with at least three variables."
       }
     ]
   },
