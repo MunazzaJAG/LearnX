@@ -23,9 +23,9 @@ export function AchievementsView() {
 
       {/* Badges Grid (3 columns on desktop) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {BADGES_DATA.map((badge) => {
-          const isUnlocked = badges.includes(badge.id);
-          const unlockDate = badgeDates[badge.id] || "2026-09-09";
+        {BADGES_DATA.filter((b) => !b.hidden).map((badge) => {
+          const isUnlocked = badges.includes(badge.id) || (badge.id === "identity_found" && badges.includes("identity_created"));
+          const unlockDate = badgeDates[badge.id] || badgeDates["identity_created"] || "2026-09-09";
 
           return (
             <div

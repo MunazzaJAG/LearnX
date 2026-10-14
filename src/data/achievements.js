@@ -9,13 +9,23 @@ export const BADGES_DATA = [
     bg: "#E6F5F4"
   },
   {
-    id: "identity_created",
-    name: "Identity Created",
+    id: "identity_found",
+    name: "Identity Found",
     icon: "🆔",
     missionId: 2,
-    description: "Establish developer credentials. Complete mission 2: identity.",
+    description: "Save player details in variables to create an identity card. Complete mission 2: identity.",
     color: "#3A86C8",
     bg: "#EBF3FB"
+  },
+  {
+    id: "identity_created",
+    name: "Identity Found",
+    icon: "🆔",
+    missionId: 2,
+    description: "Save player details in variables to create an identity card. Complete mission 2: identity.",
+    color: "#3A86C8",
+    bg: "#EBF3FB",
+    hidden: true
   },
   {
     id: "terminal_whisperer",

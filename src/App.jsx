@@ -9,8 +9,11 @@ import { AchievementsView } from "./views/AchievementsView";
 import { ProfileView } from "./views/ProfileView";
 import { AuthView } from "./views/AuthView";
 
+import { UnderseaReefView } from "./views/UnderseaReefView";
+import { UnderseaMissionView } from "./views/UnderseaMissionView";
+
 function MainContent() {
-  const { activeView } = useGameState();
+  const { activeView, currentMissionId } = useGameState();
 
   const renderView = () => {
     switch (activeView) {
@@ -18,7 +21,12 @@ function MainContent() {
         return <DashboardView />;
       case "quest_map":
         return <QuestMapView />;
+      case "undersea_reef":
+        return <UnderseaReefView />;
       case "mission_lab":
+        if (currentMissionId === 1 || currentMissionId === 2) {
+          return <UnderseaMissionView missionId={currentMissionId} />;
+        }
         return <MissionLabView />;
       case "achievements":
         return <AchievementsView />;

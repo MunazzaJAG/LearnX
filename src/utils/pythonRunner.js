@@ -86,7 +86,8 @@ builtins.input = custom_input
       return {
         output: stdout.join("\n"),
         error: stderr.length > 0 ? stderr.join("\n") : null,
-        isSuccess: true
+        isSuccess: true,
+        scope: extractPythonScope(code)
       };
     } catch (pyErr) {
       console.warn("Pyodide error, evaluating with resilient engine:", pyErr);
@@ -105,6 +106,82 @@ async function runWithResilientEngine(code, onInputRequest) {
   const outputLines = [];
   const scope = {};
   const classes = {};
+
+  // Preliminary syntax check for common beginner errors
+  const rawLines = code.split("\n");
+  for (let idx = 0; idx < rawLines.length; idx++) {
+    const rawLine = rawLines[idx];
+    const lineNum = idx + 1;
+    const trimmed = rawLine.trim();
+
+    if (!trimmed || trimmed.startsWith("#")) continue;
+
+    // Check for Python 2 style print
+    if (/^print\s+["'].*$/.test(trimmed)) {
+      return {
+        output: "",
+        error: `SyntaxError: Missing parentheses in call to 'print'. Did you mean print(${trimmed.slice(6)})? (line ${lineNum})`,
+        isSuccess: false,
+        scope: {}
+      };
+    }
+
+    // Check for misspelled print
+    const misspelledMatch = trimmed.match(/^(prin|prnt|pint|prnit|prt)\s*\(/i);
+    if (misspelledMatch) {
+      return {
+        output: "",
+        error: `NameError: name '${misspelledMatch[1]}' is not defined. Did you mean: 'print'? (line ${lineNum})`,
+        isSuccess: false,
+        scope: {}
+      };
+    }
+
+    // Check for unclosed string quotes outside comments
+    let inDouble = false;
+    let inSingle = false;
+    let parens = 0;
+    for (let cIdx = 0; cIdx < rawLine.length; cIdx++) {
+      const ch = rawLine[cIdx];
+      const prev = cIdx > 0 ? rawLine[cIdx - 1] : "";
+      if (ch === "#" && !inDouble && !inSingle) {
+        break; // comment starts
+      }
+      if (ch === '"' && prev !== "\\" && !inSingle) {
+        inDouble = !inDouble;
+      } else if (ch === "'" && prev !== "\\" && !inDouble) {
+        inSingle = !inSingle;
+      } else if (!inDouble && !inSingle) {
+        if (ch === "(") parens++;
+        if (ch === ")") parens--;
+      }
+    }
+
+    if (inDouble || inSingle) {
+      return {
+        output: "",
+        error: `SyntaxError: unterminated string literal (detected at line ${lineNum})`,
+        isSuccess: false,
+        scope: {}
+      };
+    }
+
+    if (parens > 0) {
+      return {
+        output: "",
+        error: `SyntaxError: unexpected EOF while parsing. Missing closing ')' (line ${lineNum})`,
+        isSuccess: false,
+        scope: {}
+      };
+    } else if (parens < 0) {
+      return {
+        output: "",
+        error: `SyntaxError: unmatched ')' (line ${lineNum})`,
+        isSuccess: false,
+        scope: {}
+      };
+    }
+  }
 
   const cleanLines = code
     .split("\n")
@@ -613,13 +690,55 @@ async function runWithResilientEngine(code, onInputRequest) {
     return {
       output: outputLines.join("\n"),
       error: null,
-      isSuccess: true
+      isSuccess: true,
+      scope
     };
   } catch (err) {
     return {
       output: outputLines.join("\n"),
       error: `SyntaxError / RuntimeError: ${err.message}`,
-      isSuccess: false
+      isSuccess: false,
+      scope: {}
     };
   }
+}
+
+/**
+ * Utility to extract variable values from code without execution
+ */
+export function extractPythonScope(code) {
+  const scope = {};
+  if (!code) return scope;
+
+  const lines = code.split("\n");
+  for (let line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+
+    const assignMatch = trimmed.match(/^([a-zA-Z_]\w*)\s*=\s*(.*)$/);
+    if (assignMatch) {
+      const varName = assignMatch[1];
+      let valStr = assignMatch[2].trim();
+      // Remove inline comments
+      const commentIdx = valStr.indexOf("#");
+      if (commentIdx !== -1) {
+        valStr = valStr.slice(0, commentIdx).trim();
+      }
+
+      if ((valStr.startsWith('"') && valStr.endsWith('"')) || (valStr.startsWith("'") && valStr.endsWith("'"))) {
+        scope[varName] = valStr.slice(1, -1);
+      } else if (valStr === "True") {
+        scope[varName] = true;
+      } else if (valStr === "False") {
+        scope[varName] = false;
+      } else if (/^-?\d+$/.test(valStr)) {
+        scope[varName] = parseInt(valStr, 10);
+      } else if (/^-?\d+\.\d+$/.test(valStr)) {
+        scope[varName] = parseFloat(valStr);
+      } else {
+        scope[varName] = valStr;
+      }
+    }
+  }
+  return scope;
 }
