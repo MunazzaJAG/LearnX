@@ -84,6 +84,16 @@ class SoundEngine {
     this.playTone(320, 0.15, "sine", 0.1, 0.0);
     this.playTone(280, 0.22, "sine", 0.08, 0.12);
   }
+
+  // Uplifting sound effect for stage completion and level ups
+  playLevelUp() {
+    this.playVictory();
+  }
+
+  // Success chime alias
+  playSuccess() {
+    this.playVictory();
+  }
 }
 
 export const soundEngine = new SoundEngine();

@@ -101,89 +101,113 @@ export const LEVELS_DATA = [
   },
   {
     level: 3,
-    title: "USER TERMINAL",
-    subtitle: "Interactive user input",
+    title: "SECURITY GATE",
+    subtitle: "input() and int() type conversion",
     chapter: "CHAPTER 02 · LIVING ECOSYSTEM",
     biome: "Forest Green",
     biomeKey: "forest",
     biomeName: "Eco Woods",
-    pythonDocTopic: "Input/Output (input) & Type Casting (int, str)",
-    bloomsTaxonomy: "APPLY",
-    story: "You step into the NEXA Forest Grid. The terminal requires interactive data input to calibrate environmental monitors.",
-    teach: "The `input()` function prompts the user for text input and always returns a string. Use `int()` or `float()` to convert strings to numbers for calculations.",
-    codeTemplate: "name = input(\"Name: \")\nage = int(input(\"Age: \"))\nprint(\"Access granted for:\", name)",
-    challenge: "Take user input for name and age, then print 'Access granted for: ' followed by the name.",
-    expectedOutput: "Access granted for: Alex",
+    pythonDocTopic: "User Input (input) & Type Conversion (int)",
+    bloomsTaxonomy: "UNDERSTAND / APPLY / CREATE",
+    story: "You stand before the towering Ancient Gate of Eco Woods. Conduits run dark across the roots. To open the gate, the forest security mechanism requires interactive input and an integer clearance level.",
+    teach: "The input() function prompts the user for text input and always returns a string. Use int() to convert numeric strings to integers for calculations and comparisons.",
+    codeTemplate: "# Open the Ancient Gate\nname = input(\"Enter explorer name: \")\nlevel = int(input(\"Enter clearance level: \"))\nprint(\"Access Granted:\", name)\nprint(\"Security Level:\", level)",
+    challenge: "Capture an explorer name with input() and clearance level with int(input()), then print verification lines.",
+    expectedOutput: "Access Granted: Alex\nSecurity Level: 2",
     hints: [
-      "Hint 1: Use name = input() to get text from the user.",
-      "Hint 2: Use int() if you need numerical conversion.",
-      "Hint 3: print(\"Access granted for:\", name)"
+      "Hint 1: Use name = input(\"Enter explorer name: \") to capture text.",
+      "Hint 2: Wrap the numeric prompt in int(), like level = int(input(\"Enter clearance level: \")).",
+      "Hint 3: Use print(\"Access Granted:\", name) and print(\"Security Level:\", level)."
     ],
-    rewardXP: 100,
-    badge: { id: "terminal_whisperer", name: "Terminal Whisperer", icon: "🌲", description: "Interactive user input. Complete mission 3: user terminal." },
-    novaTip: "Inputs make software alive! When the terminal asks, enter your identity.",
+    rewardXP: 60,
+    badge: { id: "gate_opener", name: "Gate Opener", icon: "🚪", description: "Use input() and int() to open the ancient forest gate. Complete Mission 3: Security Gate." },
+    novaTip: "Remember: input() always returns text! When numbers are needed for math or comparison, cast it with int().",
     subLevels: [
       {
         id: 1,
-        title: "Biomass Sensor Calibration",
+        title: "Activate the Forest Gate",
         type: "game",
-        description: "Simulate forest sensor input feedback."
+        description: "Interactive terminal input that wakes the ancient gate conduits."
       },
       {
         id: 2,
-        title: "Dynamic Input Capture",
-        type: "code",
-        description: "Capture interactive user input from the terminal and return access greetings."
+        title: "Text or Number?",
+        type: "understand",
+        description: "Classify inputs into string (str) or integer (int) data types."
       },
       {
         id: 3,
-        title: "Numeric Telemetry Casting",
-        type: "mastery",
-        description: "Convert string inputs to numeric integers for canopy telemetry."
+        title: "Repair the Access Scanner",
+        type: "analyze",
+        description: "Diagnose and fix unconverted string input in calculation errors."
+      },
+      {
+        id: 4,
+        title: "Build Access Request",
+        type: "apply",
+        description: "Capture explorer name and increment numeric clearance with int()."
+      },
+      {
+        id: 5,
+        title: "Boss Battle: Open the Ancient Gate",
+        type: "create",
+        description: "Combine input() and int() to unlock the passage into the Living Forest."
       }
     ]
   },
   {
     level: 4,
-    title: "SECURITY GATE",
-    subtitle: "Build conditional checks",
+    title: "USER TERMINAL",
+    subtitle: "Branching logic with if, elif, and else",
     chapter: "CHAPTER 02 · LIVING ECOSYSTEM",
     biome: "Forest Green",
     biomeKey: "forest",
     biomeName: "Eco Woods",
-    pythonDocTopic: "Control Flow (if, elif, else) & Comparison Operators (==, !=, >, <)",
-    bloomsTaxonomy: "APPLY / ANALYZE",
-    story: "A heavy blast door blocks the way to the Forest Grid server. The security gate needs logic to evaluate passcodes.",
-    teach: "Conditional statements execute code blocks only if conditions evaluate to `True`. Use `if`, `elif`, and `else` with comparison operators like `==`, `!=`, `<`, `>`. Remember the colon `:` and 4-space indentation.",
-    codeTemplate: "password = \"python123\"\n\nif password == \"python123\":\n    print(\"Access granted\")\nelse:\n    print(\"Access denied\")",
-    challenge: "Write an if-else check that prints 'Access granted' if password is 'python123', else 'Access denied'.",
-    expectedOutput: "Access granted",
+    pythonDocTopic: "Conditional Statements (if, elif, else) & Comparison Operators (==, !=, <, >, <=, >=)",
+    bloomsTaxonomy: "APPLY / ANALYZE / EVALUATE / CREATE",
+    story: "Beyond the Security Gate lies the Ancient User Terminal of the Living Forest. The trail divides into three paths: Canopy Route, Undergrowth Trail, and Deep Grove. Use conditional logic to direct explorers based on their XP score.",
+    teach: "Conditional statements execute code blocks only if conditions evaluate to True. Use if, elif, and else with comparison operators like ==, !=, <, >, <=, and >=. Remember the colon ':' and 4-space indentation.",
+    codeTemplate: "# Direct the Explorer\nxp = 75\n\nif xp < 50:\n    print(\"Rank: Scout\")\nelif xp < 100:\n    print(\"Rank: Ranger\")\nelse:\n    print(\"Rank: Guardian\")",
+    challenge: "Write a three-tier rank system with if, elif, and else that assigns Scout for XP < 50, Ranger for XP < 100, and Guardian for XP >= 100.",
+    expectedOutput: "Rank: Ranger",
     hints: [
-      "Hint 1: Use == to compare two values.",
-      "Hint 2: Don't forget the colon ':' after if and else lines.",
-      "Hint 3: Indent the print statements under the if and else blocks."
+      "Hint 1: Use 'if xp < 50:' for the first tier.",
+      "Hint 2: Use 'elif xp < 100:' for the middle tier (evaluates when xp >= 50).",
+      "Hint 3: Use 'else:' for explorers with 100 XP or higher."
     ],
-    rewardXP: 100,
-    badge: { id: "security_rookie", name: "Security Rookie", icon: "🛡️", description: "Build conditional checks. Complete mission 4: security gate." },
-    novaTip: "Logic gates are the locks and keys of NEXA. Branching paths make decisions possible.",
+    rewardXP: 60,
+    badge: { id: "logic_navigator", name: "Logic Navigator", icon: "🧭", description: "Use if, elif, and else to navigate forest routes. Complete Mission 4: User Terminal." },
+    novaTip: "Python checks conditions from top to bottom. As soon as one matches, its block runs and the rest are bypassed.",
     subLevels: [
       {
         id: 1,
-        title: "Bio-Dome Logic Gatekeeper",
+        title: "Choose the Forest Path",
         type: "game",
-        description: "Toggle temperature and moisture triggers to evaluate gate permissions."
+        description: "Select pathways based on clearance level and XP thresholds."
       },
       {
         id: 2,
-        title: "Blast Door Conditionals",
-        type: "code",
-        description: "Code the password verification condition to open the security gate."
+        title: "Condition Detective",
+        type: "understand",
+        description: "Evaluate comparison expressions across edge cases to determine True/False."
       },
       {
         id: 3,
-        title: "Multi-branch Clearance",
-        type: "mastery",
-        description: "Implement elif logic for guest, admin, and override levels."
+        title: "Repair Branching Terminal",
+        type: "analyze",
+        description: "Fix broken if/elif ordering, syntax errors, and missing colons."
+      },
+      {
+        id: 4,
+        title: "Build Three-Rank System",
+        type: "apply",
+        description: "Construct tiered logic and verify across edge test scores."
+      },
+      {
+        id: 5,
+        title: "Boss Battle: Restore Forest Routes",
+        type: "create",
+        description: "Complete full multi-branch terminal script tested against boundary cases (0, 49, 50, 99, 100, 100+)."
       }
     ]
   },
