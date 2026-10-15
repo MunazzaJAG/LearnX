@@ -232,6 +232,176 @@ export function OceanReefArt({ className = "w-full h-auto" }) {
   );
 }
 
+// Eco Woods Hero Card Illustration for Biome Overview and Mission Headers
+export function EcoWoodsArt({ className = "w-full h-auto" }) {
+  return (
+    <svg
+      viewBox="0 0 540 280"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <defs>
+        <linearGradient id="forest-sky" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#E2F4E8" />
+          <stop offset="60%" stopColor="#C6EBD3" />
+          <stop offset="100%" stopColor="#9BD4AE" />
+        </linearGradient>
+        <linearGradient id="canopy-deep" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#2D6A4F" />
+          <stop offset="100%" stopColor="#143A29" />
+        </linearGradient>
+        <linearGradient id="trunk-wood" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#4A3525" />
+          <stop offset="50%" stopColor="#694C35" />
+          <stop offset="100%" stopColor="#38271B" />
+        </linearGradient>
+        <linearGradient id="gate-stone" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#7E9689" />
+          <stop offset="50%" stopColor="#5E786B" />
+          <stop offset="100%" stopColor="#41564C" />
+        </linearGradient>
+        <linearGradient id="sun-beam" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#FFF9D2" stopOpacity="0.45" />
+          <stop offset="100%" stopColor="#FFF9D2" stopOpacity="0.0" />
+        </linearGradient>
+      </defs>
+
+      {/* Sky / Morning Mist Atmosphere */}
+      <rect width="540" height="280" rx="24" fill="url(#forest-sky)" />
+
+      {/* Warm Golden Sunbeams filtering through high branches */}
+      <g opacity="0.6">
+        <polygon points="100,0 150,0 210,280 140,280" fill="url(#sun-beam)" />
+        <polygon points="240,0 300,0 380,280 300,280" fill="url(#sun-beam)" />
+        <polygon points="380,0 430,0 520,280 450,280" fill="url(#sun-beam)" />
+      </g>
+
+      {/* Distant Mountain Silhouettes */}
+      <path
+        d="M0 130 Q90 100 180 125 T360 115 T540 120 L540 280 L0 280 Z"
+        fill="#8BBDA1"
+        opacity="0.4"
+      />
+
+      {/* Distant Layer of Tall Pine Trees */}
+      <g fill="#438662" opacity="0.6">
+        <polygon points="40,140 25,175 55,175" />
+        <polygon points="80,135 65,170 95,170" />
+        <polygon points="120,142 108,172 132,172" />
+        <polygon points="420,135 405,170 435,170" />
+        <polygon points="460,138 448,170 472,170" />
+        <polygon points="500,130 485,168 515,168" />
+      </g>
+
+      {/* Midground Forest Hills */}
+      <path
+        d="M0 160 C120 145 220 175 340 155 C440 140 500 165 540 150 L540 280 L0 280 Z"
+        fill="#265B42"
+        opacity="0.8"
+      />
+
+      {/* Winding Sparkling Forest Stream */}
+      <path
+        d="M210 280 C230 240 260 215 285 190 C300 175 315 170 330 160 L345 162 C330 175 312 185 295 205 C270 235 245 255 235 280 Z"
+        fill="#72C6B9"
+        opacity="0.9"
+      />
+
+      {/* Ancient Security Gate (Center Landmark) */}
+      <g transform="translate(270, 140)">
+        {/* Left Stone Pillar */}
+        <rect x="-70" y="0" width="22" height="95" rx="4" fill="url(#gate-stone)" stroke="#233B30" strokeWidth="2" />
+        <rect x="-72" y="-6" width="26" height="8" rx="2" fill="#7E9689" stroke="#233B30" strokeWidth="1.5" />
+        <rect x="-74" y="90" width="30" height="10" rx="2" fill="#3D5348" stroke="#233B30" strokeWidth="1.5" />
+        {/* Left Rune Inscriptions */}
+        <line x1="-59" y1="20" x2="-59" y2="35" stroke="#74C69D" strokeWidth="2.5" strokeLinecap="round" className="animate-pulse" />
+        <circle cx="-59" cy="45" r="2.5" fill="#52B788" />
+        <line x1="-59" y1="55" x2="-59" y2="75" stroke="#74C69D" strokeWidth="2" strokeLinecap="round" />
+
+        {/* Right Stone Pillar */}
+        <rect x="48" y="0" width="22" height="95" rx="4" fill="url(#gate-stone)" stroke="#233B30" strokeWidth="2" />
+        <rect x="46" y="-6" width="26" height="8" rx="2" fill="#7E9689" stroke="#233B30" strokeWidth="1.5" />
+        <rect x="44" y="90" width="30" height="10" rx="2" fill="#3D5348" stroke="#233B30" strokeWidth="1.5" />
+        {/* Right Rune Inscriptions */}
+        <line x1="59" y1="20" x2="59" y2="35" stroke="#74C69D" strokeWidth="2.5" strokeLinecap="round" className="animate-pulse" />
+        <circle cx="59" cy="45" r="2.5" fill="#52B788" />
+        <line x1="59" y1="55" x2="59" y2="75" stroke="#74C69D" strokeWidth="2" strokeLinecap="round" />
+
+        {/* Overhead Ancient Stone Arch */}
+        <path d="M -70 5 Q 0 -25 70 5 L 65 18 Q 0 -12 -65 18 Z" fill="url(#gate-stone)" stroke="#233B30" strokeWidth="2" />
+        {/* Keystone Logic Emblem */}
+        <circle cx="0" cy="-12" r="14" fill="#1C3D2F" stroke="#52B788" strokeWidth="2.5" />
+        <circle cx="0" cy="-12" r="8" fill="#52B788" className="animate-pulse" />
+        <text x="0" y="-8.5" textAnchor="middle" fill="#FFFFFF" fontSize="9" fontWeight="900" fontFamily="monospace">if</text>
+
+        {/* Arched Wooden Bridge Crossing Stream under Gate */}
+        <path d="M -42 75 Q 0 65 42 75" stroke="#8E6743" strokeWidth="5" strokeLinecap="round" fill="none" />
+        <line x1="-40" y1="75" x2="-40" y2="88" stroke="#5C3F26" strokeWidth="3" />
+        <line x1="-15" y1="71" x2="-15" y2="85" stroke="#5C3F26" strokeWidth="3" />
+        <line x1="15" y1="71" x2="15" y2="85" stroke="#5C3F26" strokeWidth="3" />
+        <line x1="40" y1="75" x2="40" y2="88" stroke="#5C3F26" strokeWidth="3" />
+      </g>
+
+      {/* Massive Ancient Foreground Trees */}
+      <path d="M-20 280 C10 240 25 180 15 110 C8 50 -10 10 -30 0 L-60 0 L-60 280 Z" fill="url(#trunk-wood)" />
+      <path d="M5 240 C12 210 15 180 12 150 C8 120 2 95 -8 70" stroke="#52B788" strokeWidth="3" opacity="0.7" strokeLinecap="round" fill="none" />
+      <circle cx="20" cy="50" r="50" fill="url(#canopy-deep)" />
+      <circle cx="70" cy="30" r="45" fill="#2D6A4F" />
+      <circle cx="110" cy="55" r="40" fill="#3D8262" />
+
+      <path d="M560 280 C530 240 515 180 525 110 C532 50 550 10 570 0 L600 0 L600 280 Z" fill="url(#trunk-wood)" />
+      <path d="M535 230 C528 200 525 170 528 140 C532 110 538 85 548 60" stroke="#52B788" strokeWidth="3" opacity="0.7" strokeLinecap="round" fill="none" />
+      <circle cx="520" cy="45" r="50" fill="url(#canopy-deep)" />
+      <circle cx="470" cy="25" r="45" fill="#2D6A4F" />
+      <circle cx="430" cy="50" r="40" fill="#3D8262" />
+
+      {/* User Terminal Kiosk (Right Clearing) */}
+      <g transform="translate(390, 205)">
+        <rect x="-12" y="15" width="24" height="30" rx="3" fill="#4B3B2F" stroke="#2D231B" strokeWidth="1.5" />
+        <rect x="-18" y="-4" width="36" height="24" rx="4" fill="#1C3D2F" stroke="#52B788" strokeWidth="2" />
+        <rect x="-14" y="0" width="28" height="16" rx="2" fill="#0C2018" />
+        <line x1="-10" y1="4" x2="6" y2="4" stroke="#52B788" strokeWidth="1.5" strokeLinecap="round" />
+        <line x1="-10" y1="8" x2="0" y2="8" stroke="#74C69D" strokeWidth="1.5" strokeLinecap="round" />
+        <line x1="-10" y1="12" x2="10" y2="12" stroke="#ECA752" strokeWidth="1.5" strokeLinecap="round" />
+        <polygon points="-22,-4 0,-14 22,-4" fill="#3D8262" />
+      </g>
+
+      {/* Floating Bioluminescent Spores / Fireflies */}
+      <g fill="#E6FF80">
+        <circle cx="150" cy="180" r="3" className="animate-pulse" />
+        <circle cx="190" cy="150" r="2" className="animate-pulse" />
+        <circle cx="340" cy="130" r="2.5" className="animate-pulse" />
+        <circle cx="370" cy="170" r="3" className="animate-pulse" />
+        <circle cx="230" cy="190" r="2" className="animate-pulse" />
+        <circle cx="450" cy="160" r="2.5" className="animate-pulse" />
+      </g>
+
+      {/* Foreground Mossy Ground & Wild Ferns */}
+      <path
+        d="M0 240 C100 230 200 245 300 235 C400 225 480 240 540 230 L540 280 L0 280 Z"
+        fill="#143A29"
+      />
+      <g stroke="#3D8262" strokeWidth="2" strokeLinecap="round" opacity="0.9">
+        <path d="M50 260 Q60 235 80 230" />
+        <path d="M45 262 Q35 240 20 235" />
+        <path d="M70 268 Q85 245 105 242" />
+      </g>
+      <g transform="translate(130, 255)">
+        <ellipse cx="0" cy="0" rx="9" ry="6" fill="#52B788" />
+        <rect x="-2" y="3" width="4" height="8" rx="2" fill="#FFFFFF" />
+        <circle cx="-3" cy="-1" r="1.5" fill="#FFFFFF" />
+        <circle cx="3" cy="-2" r="1.5" fill="#FFFFFF" />
+      </g>
+      <g transform="translate(470, 258)">
+        <ellipse cx="0" cy="0" rx="8" ry="5" fill="#ECA752" />
+        <rect x="-2" y="3" width="4" height="8" rx="2" fill="#FFFFFF" />
+        <circle cx="-2" cy="-1" r="1.5" fill="#FFFFFF" />
+      </g>
+    </svg>
+  );
+}
+
 // Interactive Map Node with hover events and state styling
 export function LevelNode({
   x,
@@ -428,6 +598,8 @@ export function WorldMapArt({
     if (lvl === currentMission) return "current";
     if (lvl === 1) return "available";
     if (lvl === 2 && completedMissions.includes(1)) return "available";
+    if (lvl === 3 && completedMissions.includes(2)) return "available";
+    if (lvl === 4 && completedMissions.includes(3)) return "available";
     return "locked";
   };
 
@@ -686,7 +858,7 @@ export function WorldMapArt({
 
 
         {/* ======================================================== */}
-        {/* WORLD 02: ECO WOODS (Top Left — Preview Biome) */}
+        {/* WORLD 02: ECO WOODS (Top Left — Fully Playable Biome) */}
         {/* ======================================================== */}
         <g
           className={"transition-all duration-300 cursor-pointer " + (activeBiome === "all" || activeBiome === "forest" ? "opacity-100" : "opacity-35")}
@@ -695,7 +867,7 @@ export function WorldMapArt({
           {/* Organic Tiered Terrain 3D Base */}
           <path
             d="M 75 300 C 65 240, 160 200, 240 215 C 310 225, 345 270, 335 320 C 325 365, 250 385, 180 380 C 110 375, 80 345, 75 300 Z"
-            fill="#3A6348"
+            fill="#2D543B"
             filter="url(#island-3d-shadow)"
           />
 
@@ -711,20 +883,33 @@ export function WorldMapArt({
             fill="url(#forest-island-grad)"
           />
 
+          {/* Ambient Forest Canopy Shadows */}
+          <ellipse cx="140" cy="275" rx="35" ry="16" fill="#235A42" opacity="0.15" />
+          <ellipse cx="280" cy="270" rx="30" ry="14" fill="#235A42" opacity="0.15" />
+
           {/* Winding Cobblestone Forest Path */}
           <path
             d="M 125 315 C 160 345, 230 355, 265 315"
             stroke="#DDEEE0"
-            strokeWidth="10"
+            strokeWidth="11"
             strokeLinecap="round"
-            opacity="0.8"
+            opacity="0.9"
+          />
+          {/* Path border stones */}
+          <path
+            d="M 125 315 C 160 345, 230 355, 265 315"
+            stroke="#8EBA9D"
+            strokeWidth="1.5"
+            strokeDasharray="4 4"
+            fill="none"
           />
 
           {/* Wooden Arched Stream Bridge */}
           <g transform="translate(195, 335)">
-            <path d="M -16 0 Q 0 -6 16 0" stroke="#8E6743" strokeWidth="4" strokeLinecap="round" fill="none" />
-            <line x1="-14" y1="0" x2="-14" y2="6" stroke="#684A2E" strokeWidth="2" />
-            <line x1="14" y1="0" x2="14" y2="6" stroke="#684A2E" strokeWidth="2" />
+            <path d="M -16 0 Q 0 -6 16 0" stroke="#8E6743" strokeWidth="4.5" strokeLinecap="round" fill="none" />
+            <line x1="-14" y1="0" x2="-14" y2="7" stroke="#684A2E" strokeWidth="2" />
+            <line x1="14" y1="0" x2="14" y2="7" stroke="#684A2E" strokeWidth="2" />
+            <line x1="0" y1="-3" x2="0" y2="6" stroke="#684A2E" strokeWidth="1.8" />
           </g>
 
           {/* Multi-layered Pine and Canopy Trees */}
@@ -751,37 +936,47 @@ export function WorldMapArt({
             <circle cx="5" cy="8" r="11" fill="#74C69D" />
           </g>
 
-          {/* Modern Botanical Eco-Lab Building */}
-          <g transform="translate(225, 240)">
-            <polygon points="0,0 -20,12 -20,34 0,22" fill="#FFFFFF" stroke="#CCDED3" strokeWidth="1" />
-            <polygon points="0,0 24,14 24,36 0,22" fill="#EAF3EE" stroke="#CCDED3" strokeWidth="1" />
-            <polygon points="0,0 24,14 4,26 -20,12" fill="#52B788" />
-            {/* Glowing Gate Terminal */}
-            <rect x="-14" y="14" width="8" height="12" rx="2" fill="#2D6A4F" />
-            <rect x="6" y="16" width="10" height="12" rx="2" fill="#2D6A4F" />
+          {/* Ancient Security Gate Landmark (Location of Mission 03) */}
+          <g transform="translate(285, 335)">
+            {/* Gate stone pillars */}
+            <rect x="-12" y="-18" width="5" height="20" rx="1" fill="#5E786B" stroke="#233B30" strokeWidth="1" />
+            <rect x="8" y="-18" width="5" height="20" rx="1" fill="#5E786B" stroke="#233B30" strokeWidth="1" />
+            {/* Archway top */}
+            <path d="M -13 -18 Q 0 -26 13 -18" stroke="#5E786B" strokeWidth="3" strokeLinecap="round" fill="none" />
+            {/* Glowing Rune Center */}
+            <circle cx="0" cy="-21" r="3" fill="#52B788" className="animate-pulse" />
+            <circle cx="0" cy="-21" r="1.5" fill="#FFFFFF" />
+            {/* Soft ground glow */}
+            <ellipse cx="0" cy="2" rx="12" ry="4" fill="#52B788" opacity="0.35" />
           </g>
 
-          {/* Node 4: Security Gate */}
-          <LevelNode
-            x={155}
-            y={325}
-            level={4}
-            name="Security Gate"
-            status={getNodeStatus(4)}
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelectMission(4);
-            }}
-            onMouseEnter={() => onHoverMission(4)}
-            onMouseLeave={() => onHoverMission(null)}
-          />
+          {/* Ancient User Terminal Kiosk (Location of Mission 04) */}
+          <g transform="translate(130, 310)">
+            {/* Terminal base & screen */}
+            <rect x="-7" y="-14" width="14" height="18" rx="2" fill="#244535" stroke="#52B788" strokeWidth="1.2" />
+            <rect x="-5" y="-12" width="10" height="9" rx="1" fill="#0E241B" />
+            {/* Three route indicator lights: Scout (green), Ranger (amber), Guardian (purple) */}
+            <circle cx="-3" cy="-7.5" r="1.2" fill="#52B788" />
+            <circle cx="0" cy="-7.5" r="1.2" fill="#ECA752" />
+            <circle cx="3" cy="-7.5" r="1.2" fill="#A78BFA" />
+            <line x1="-3" y1="-0.5" x2="3" y2="-0.5" stroke="#74C69D" strokeWidth="1" />
+          </g>
 
-          {/* Node 3: User Terminal */}
+          {/* Floating Bioluminescent Spores / Fireflies */}
+          <g fill="#A3E635">
+            <circle cx="110" cy="285" r="2" className="animate-pulse" opacity="0.8" />
+            <circle cx="170" cy="245" r="2.5" className="animate-pulse" opacity="0.9" />
+            <circle cx="210" cy="295" r="2" className="animate-pulse" opacity="0.8" />
+            <circle cx="245" cy="235" r="2.5" className="animate-pulse" opacity="0.9" />
+            <circle cx="300" cy="280" r="1.8" className="animate-pulse" opacity="0.7" />
+          </g>
+
+          {/* Node 3: Security Gate (Mission 03) */}
           <LevelNode
             x={255}
             y={350}
             level={3}
-            name="User Terminal"
+            name="Security Gate"
             status={getNodeStatus(3)}
             onClick={(e) => {
               e.stopPropagation();
@@ -791,25 +986,40 @@ export function WorldMapArt({
             onMouseLeave={() => onHoverMission(null)}
           />
 
-          {/* Biome Title & Preview Pill */}
+          {/* Node 4: User Terminal (Mission 04) */}
+          <LevelNode
+            x={155}
+            y={325}
+            level={4}
+            name="User Terminal"
+            status={getNodeStatus(4)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelectMission(4);
+            }}
+            onMouseEnter={() => onHoverMission(4)}
+            onMouseLeave={() => onHoverMission(null)}
+          />
+
+          {/* Biome Title & Playable Pill */}
           <g transform="translate(210, 412)">
             <rect
-              x="-62"
+              x="-68"
               y="-12"
-              width="124"
+              width="136"
               height="24"
               rx="12"
               fill="#FFFFFF"
-              stroke="#D2E4D8"
-              strokeWidth="1.2"
+              stroke="#2D6A4F"
+              strokeWidth="1.5"
               filter="url(#map-shadow)"
               className="hover:fill-[#F0F7F3]"
             />
             <text x="0" y="3" textAnchor="middle" fill="#1C3D2F" fontSize="10" fontWeight="900" letterSpacing="0.06em">
               ECO WOODS
             </text>
-            <text x="0" y="24" textAnchor="middle" fill="#597A6C" fontSize="8" fontWeight="800">
-              02 · INPUT & LOGIC
+            <text x="0" y="24" textAnchor="middle" fill="#2D6A4F" fontSize="8" fontWeight="800">
+              02 · PLAYABLE CHAPTER
             </text>
           </g>
         </g>

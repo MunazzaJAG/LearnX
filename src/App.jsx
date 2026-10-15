@@ -11,6 +11,8 @@ import { AuthView } from "./views/AuthView";
 
 import { UnderseaReefView } from "./views/UnderseaReefView";
 import { UnderseaMissionView } from "./views/UnderseaMissionView";
+import { EcoWoodsView } from "./views/EcoWoodsView";
+import { EcoWoodsMissionView } from "./views/EcoWoodsMissionView";
 
 function MainContent() {
   const { activeView, currentMissionId } = useGameState();
@@ -23,9 +25,14 @@ function MainContent() {
         return <QuestMapView />;
       case "undersea_reef":
         return <UnderseaReefView />;
+      case "eco_woods":
+        return <EcoWoodsView />;
       case "mission_lab":
         if (currentMissionId === 1 || currentMissionId === 2) {
           return <UnderseaMissionView missionId={currentMissionId} />;
+        }
+        if (currentMissionId === 3 || currentMissionId === 4) {
+          return <EcoWoodsMissionView missionId={currentMissionId} />;
         }
         return <MissionLabView />;
       case "achievements":

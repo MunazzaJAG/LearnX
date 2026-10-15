@@ -26,6 +26,20 @@ export function TopHeader() {
         </div>
       );
     }
+    if (activeView === "eco_woods") {
+      return (
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => navigateTo("quest_map")}
+            className="hover:text-[#172E26] hover:underline transition-colors"
+          >
+            The Python Expedition
+          </button>
+          <ChevronRight className="w-3 h-3 text-[#9EB0A5]" />
+          <span className="font-semibold text-[#253D32]">Eco Woods</span>
+        </div>
+      );
+    }
     if (activeView === "mission_lab") {
       if (currentMissionId === 1 || currentMissionId === 2) {
         return (
@@ -46,6 +60,29 @@ export function TopHeader() {
             <ChevronRight className="w-3 h-3 text-[#9EB0A5]" />
             <span className="font-semibold text-[#253D32]">
               Mission {currentMissionId}: {currentMissionId === 1 ? "First Day" : "Identity"}
+            </span>
+          </div>
+        );
+      }
+      if (currentMissionId === 3 || currentMissionId === 4) {
+        return (
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => navigateTo("quest_map")}
+              className="hover:text-[#172E26] hover:underline transition-colors"
+            >
+              The Python Expedition
+            </button>
+            <ChevronRight className="w-3 h-3 text-[#9EB0A5]" />
+            <button
+              onClick={() => navigateTo("eco_woods")}
+              className="hover:text-[#172E26] hover:underline transition-colors"
+            >
+              Eco Woods
+            </button>
+            <ChevronRight className="w-3 h-3 text-[#9EB0A5]" />
+            <span className="font-semibold text-[#253D32]">
+              Mission {currentMissionId}: {currentMissionId === 3 ? "Security Gate" : "User Terminal"}
             </span>
           </div>
         );

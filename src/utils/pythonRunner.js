@@ -322,24 +322,49 @@ async function runWithResilientEngine(code, onInputRequest) {
       }
     }
 
-    // String concatenation with +
-    if (e.includes("+")) {
-      const tokens = e.split("+").map(t => evaluateExpression(t.trim(), localScope));
-      return tokens.join("");
+    // int(x) type conversion
+    const intMatch = e.match(/^int\((.*)\)$/);
+    if (intMatch) {
+      const val = evaluateExpression(intMatch[1].trim(), localScope);
+      const parsed = parseInt(String(val).trim(), 10);
+      if (isNaN(parsed)) {
+        throw new Error(`ValueError: invalid literal for int() with base 10: '${val}'`);
+      }
+      return parsed;
     }
 
-    // Comparison expression
-    const cmpMatch = e.match(/(.*?)(==|!=|<=|>=|<|>)(.*)/);
-    if (cmpMatch) {
-      const left = evaluateExpression(cmpMatch[1].trim(), localScope);
-      const op = cmpMatch[2];
-      const right = evaluateExpression(cmpMatch[3].trim(), localScope);
-      if (op === "==") return left == right;
-      if (op === "!=") return left != right;
-      if (op === "<") return left < right;
-      if (op === ">") return left > right;
-      if (op === "<=") return left <= right;
-      if (op === ">=") return left >= right;
+    // Addition or Concatenation with + (respecting quotes & parens)
+    const plusParts = splitOutsideQuotes(e, "+");
+    if (plusParts.length > 1) {
+      const evaluated = plusParts.map(p => evaluateExpression(p, localScope));
+      const hasStr = evaluated.some(v => typeof v === "string");
+      const hasNum = evaluated.some(v => typeof v === "number");
+      if (hasStr && hasNum) {
+        throw new Error("TypeError: can only concatenate str (not 'int') to str");
+      }
+      if (hasStr) {
+        return evaluated.join("");
+      }
+      if (evaluated.every(v => typeof v === "number")) {
+        return evaluated.reduce((acc, curr) => acc + curr, 0);
+      }
+      return evaluated.join("");
+    }
+
+    // Comparison expression (check ==, !=, <=, >=, <, > outside quotes)
+    const compOps = ["==", "!=", "<=", ">=", "<", ">"];
+    for (const op of compOps) {
+      const compParts = splitOutsideQuotes(e, op);
+      if (compParts.length === 2) {
+        const left = evaluateExpression(compParts[0], localScope);
+        const right = evaluateExpression(compParts[1], localScope);
+        if (op === "==") return left == right;
+        if (op === "!=") return left != right;
+        if (op === "<") return left < right;
+        if (op === ">") return left > right;
+        if (op === "<=") return left <= right;
+        if (op === ">=") return left >= right;
+      }
     }
 
     // Check scope variable
@@ -349,26 +374,39 @@ async function runWithResilientEngine(code, onInputRequest) {
     return e;
   }
 
-  function splitParams(str) {
+  function splitOutsideQuotes(str, delimiter) {
     const res = [];
     let cur = "";
     let inQuote = false;
     let quoteChar = "";
+    let parenDepth = 0;
 
-    for (let char of str) {
+    for (let c = 0; c < str.length; c++) {
+      const char = str[c];
       if ((char === '"' || char === "'") && (!inQuote || quoteChar === char)) {
         inQuote = !inQuote;
         quoteChar = inQuote ? char : "";
         cur += char;
-      } else if (char === "," && !inQuote) {
+      } else if (!inQuote && char === "(") {
+        parenDepth++;
+        cur += char;
+      } else if (!inQuote && char === ")") {
+        parenDepth--;
+        cur += char;
+      } else if (!inQuote && parenDepth === 0 && str.startsWith(delimiter, c)) {
         res.push(cur.trim());
         cur = "";
+        c += delimiter.length - 1;
       } else {
         cur += char;
       }
     }
     if (cur.trim()) res.push(cur.trim());
     return res;
+  }
+
+  function splitParams(str) {
+    return splitOutsideQuotes(str, ",");
   }
 
   try {
@@ -580,17 +618,25 @@ async function runWithResilientEngine(code, onInputRequest) {
         continue;
       }
 
-      // if / else block
+      // if / elif / else block
       const ifMatch = line.match(/^if\s+(.*?)\s*:/);
       if (ifMatch) {
-        const conditionExpr = ifMatch[1];
-        const conditionResult = evaluateExpression(conditionExpr, scope);
-
-        const ifBody = [];
+        const branches = [{ condition: ifMatch[1].trim(), body: [] }];
         i++;
         while (i < cleanLines.length && (cleanLines[i].startsWith("    ") || cleanLines[i].startsWith("\t"))) {
-          ifBody.push(cleanLines[i].trim());
+          branches[0].body.push(cleanLines[i].trim());
           i++;
+        }
+
+        while (i < cleanLines.length && cleanLines[i].trim().match(/^elif\s+(.*?)\s*:/)) {
+          const elifMatch = cleanLines[i].trim().match(/^elif\s+(.*?)\s*:/);
+          const elifBranch = { condition: elifMatch[1].trim(), body: [] };
+          i++;
+          while (i < cleanLines.length && (cleanLines[i].startsWith("    ") || cleanLines[i].startsWith("\t"))) {
+            elifBranch.body.push(cleanLines[i].trim());
+            i++;
+          }
+          branches.push(elifBranch);
         }
 
         const elseBody = [];
@@ -602,13 +648,33 @@ async function runWithResilientEngine(code, onInputRequest) {
           }
         }
 
-        const targetBody = conditionResult ? ifBody : elseBody;
-        for (let bLine of targetBody) {
-          if (bLine.startsWith("print(")) {
-            const argStr = bLine.slice(6, -1);
-            const args = splitParams(argStr).map(p => evaluateExpression(p, scope));
-            outputLines.push(args.join(" "));
+        const runBranchBody = (bodyLines) => {
+          for (let bLine of bodyLines) {
+            if (bLine.startsWith("print(") && bLine.endsWith(")")) {
+              const argStr = bLine.slice(6, -1);
+              const args = splitParams(argStr).map(p => evaluateExpression(p, scope));
+              outputLines.push(args.join(" "));
+            } else {
+              const bAssign = bLine.match(/^([a-zA-Z_]\w*)\s*=\s*(.*)$/);
+              if (bAssign) {
+                scope[bAssign[1]] = evaluateExpression(bAssign[2], scope);
+              }
+            }
           }
+        };
+
+        let executed = false;
+        for (const branch of branches) {
+          const cond = evaluateExpression(branch.condition, scope);
+          if (cond) {
+            runBranchBody(branch.body);
+            executed = true;
+            break;
+          }
+        }
+
+        if (!executed && elseBody.length > 0) {
+          runBranchBody(elseBody);
         }
         continue;
       }
@@ -669,7 +735,26 @@ async function runWithResilientEngine(code, onInputRequest) {
         if (onInputRequest) {
           userInput = await onInputRequest(promptText);
         }
-        scope[varName] = isInt ? parseInt(userInput, 10) || 18 : userInput;
+        if (isInt) {
+          const parsed = parseInt(String(userInput).trim(), 10);
+          if (isNaN(parsed)) {
+            throw new Error(`ValueError: invalid literal for int() with base 10: '${userInput}'`);
+          }
+          scope[varName] = parsed;
+        } else {
+          scope[varName] = userInput != null ? String(userInput) : "";
+        }
+        i++;
+        continue;
+      }
+
+      // Standalone input() call
+      const bareInputMatch = line.match(/^input\((.*?)\)$/);
+      if (bareInputMatch) {
+        const promptText = evaluateExpression(bareInputMatch[1] || "");
+        if (onInputRequest) {
+          await onInputRequest(promptText);
+        }
         i++;
         continue;
       }

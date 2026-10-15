@@ -28,13 +28,32 @@ export const BADGES_DATA = [
     hidden: true
   },
   {
+    id: "gate_opener",
+    name: "Gate Opener",
+    icon: "🚪",
+    missionId: 3,
+    description: "Use input() and int() to open the ancient forest gate. Complete mission 3: security gate.",
+    color: "#2D6A4F",
+    bg: "#E8F5E9"
+  },
+  {
+    id: "logic_navigator",
+    name: "Logic Navigator",
+    icon: "🧭",
+    missionId: 4,
+    description: "Use if, elif, and else to navigate forest routes. Complete mission 4: user terminal.",
+    color: "#2D6A4F",
+    bg: "#E8F5E9"
+  },
+  {
     id: "terminal_whisperer",
     name: "Terminal Whisperer",
     icon: "🌲",
     missionId: 3,
     description: "Interactive user input. Complete mission 3: user terminal.",
     color: "#2D6A4F",
-    bg: "#E8F5E9"
+    bg: "#E8F5E9",
+    hidden: true
   },
   {
     id: "security_rookie",
@@ -43,7 +62,8 @@ export const BADGES_DATA = [
     missionId: 4,
     description: "Build conditional checks. Complete mission 4: security gate.",
     color: "#2D6A4F",
-    bg: "#E8F5E9"
+    bg: "#E8F5E9",
+    hidden: true
   },
   {
     id: "loop_pioneer",
