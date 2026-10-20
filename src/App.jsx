@@ -47,7 +47,7 @@ function MainContent() {
   return (
     <div className="flex-1 ml-64 flex flex-col min-h-screen overflow-x-hidden bg-[#F8F9F5]">
       <TopHeader />
-      <main className="flex-1 pb-16">
+      <main className={`flex-1 ${activeView === "undersea_reef" ? "pb-0 overflow-hidden" : "pb-16"}`}>
         {renderView()}
       </main>
     </div>
@@ -55,10 +55,19 @@ function MainContent() {
 }
 
 function AuthenticatedApp() {
-  const { isAuthenticated } = useGameState();
+  const { isAuthenticated, activeView } = useGameState();
 
   if (!isAuthenticated) {
     return <AuthView />;
+  }
+
+  // True Full-Screen 3D Game Mode exclusively for Undersea Reef 3D exploration
+  if (activeView === "undersea_reef") {
+    return (
+      <div className="fixed inset-0 w-screen h-screen overflow-hidden bg-[#031525] z-50">
+        <UnderseaReefView />
+      </div>
+    );
   }
 
   return (

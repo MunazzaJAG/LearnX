@@ -46,6 +46,21 @@ const INITIAL_STATE = {
 
   soundEnabled: true,
   filterBiome: "all",
+
+  underseaProgress: {
+    completedSublevels: [],
+    currentSublevel: 1,
+    restorationPercent: 0,
+    diverCustomization: {
+      suitColor: "#1b8a7a",
+      accentColor: "#52e3c2",
+      visorColor: "#20d3d3",
+      tankColor: "#e2e8f0",
+      finsColor: "#0f766e",
+    },
+    unlockedEquipment: [],
+    collectibles: [],
+  },
 };
 
 export function GameStateProvider({ children }) {
@@ -60,7 +75,29 @@ export function GameStateProvider({ children }) {
   // Main Game State
   // -----------------------------
 
-  const [state, setState] = useState(INITIAL_STATE);
+  const [state, setState] = useState(() => {
+    try {
+      const saved = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          ...INITIAL_STATE,
+          ...parsed,
+          profile: {
+            ...INITIAL_STATE.profile,
+            ...(parsed.profile || {}),
+          },
+          underseaProgress: {
+            ...INITIAL_STATE.underseaProgress,
+            ...(parsed.underseaProgress || {}),
+          },
+        };
+      }
+    } catch (e) {
+      console.warn("Failed to read local game state:", e);
+    }
+    return INITIAL_STATE;
+  });
 
   // Prevents saving before Supabase
   // data has finished loading.
@@ -756,6 +793,122 @@ export function GameStateProvider({ children }) {
   };
 
   // -----------------------------
+  // COMPLETE UNDERSEA SUBLEVEL
+  // -----------------------------
+
+  const completeUnderseaSublevel = ({
+    sublevelNum,
+    rewardXP = 50,
+    equipmentUnlock = null,
+    badgeUnlock = null,
+    restorationDelta = 8,
+  }) => {
+    const today = new Date().toISOString().split("T")[0];
+
+    setState((prev) => {
+      const currentUndersea = prev.underseaProgress || {
+        completedSublevels: [],
+        currentSublevel: 1,
+        restorationPercent: 0,
+        diverCustomization: {
+          suitColor: "#1b8a7a",
+          accentColor: "#52e3c2",
+          visorColor: "#20d3d3",
+          tankColor: "#e2e8f0",
+          finsColor: "#0f766e",
+        },
+        unlockedEquipment: [],
+        collectibles: [],
+      };
+
+      const alreadyCompleted =
+        currentUndersea.completedSublevels.includes(sublevelNum);
+
+      const newCompleted = alreadyCompleted
+        ? currentUndersea.completedSublevels
+        : [...currentUndersea.completedSublevels, sublevelNum].sort((a, b) => a - b);
+
+      const newXP = alreadyCompleted ? prev.xp : prev.xp + rewardXP;
+
+      // Badges
+      let newBadges = [...prev.badges];
+      let newBadgeDates = { ...prev.badgeDates };
+      if (badgeUnlock && !newBadges.includes(badgeUnlock.id)) {
+        newBadges.push(badgeUnlock.id);
+        newBadgeDates[badgeUnlock.id] = today;
+      }
+
+      // Equipment
+      let newEquipment = [...currentUndersea.unlockedEquipment];
+      if (
+        equipmentUnlock &&
+        !newEquipment.some((e) => e.id === equipmentUnlock.id)
+      ) {
+        newEquipment.push(equipmentUnlock);
+      }
+
+      // Restoration: each sublevel contributes directly to 100% total
+      const newRestoration = Math.min(100, Math.round((newCompleted.length / 6) * 100));
+
+      // Advance current sublevel monotonically
+      const nextSublevel = Math.min(6, Math.max(currentUndersea.currentSublevel || 1, sublevelNum + 1));
+
+      // Also mark mission 1 complete in overall progression when all 6 Undersea sublevels are finished
+      let newCompletedMissions = [...prev.completedMissions];
+      if (newCompleted.length >= 6 && !newCompletedMissions.includes(1)) {
+        newCompletedMissions.push(1);
+      }
+
+      const newLog = alreadyCompleted
+        ? prev.expeditionLog
+        : [
+            ...prev.expeditionLog,
+            {
+              id: `reef_${sublevelNum}`,
+              title: `Undersea Reef - Sublevel ${sublevelNum}`,
+              date: today,
+              xp: rewardXP,
+            },
+          ];
+
+      return {
+        ...prev,
+        xp: newXP,
+        badges: newBadges,
+        badgeDates: newBadgeDates,
+        expeditionLog: newLog,
+        completedMissions: newCompletedMissions,
+        underseaProgress: {
+          ...currentUndersea,
+          completedSublevels: newCompleted,
+          currentSublevel: nextSublevel,
+          restorationPercent: newRestoration,
+          unlockedEquipment: newEquipment,
+        },
+      };
+    });
+  };
+
+  // -----------------------------
+  // UPDATE DIVER CUSTOMIZATION
+  // -----------------------------
+
+  const updateDiverCustomization = (customization) => {
+    setState((prev) => ({
+      ...prev,
+      underseaProgress: {
+        ...(prev.underseaProgress || {}),
+        diverCustomization: {
+          ...((prev.underseaProgress &&
+            prev.underseaProgress.diverCustomization) ||
+            {}),
+          ...customization,
+        },
+      },
+    }));
+  };
+
+  // -----------------------------
   // RESET PROGRESS
   // -----------------------------
 
@@ -818,6 +971,8 @@ export function GameStateProvider({ children }) {
         toggleSound,
         updateProfile,
         completeMission,
+        completeUnderseaSublevel,
+        updateDiverCustomization,
         resetProgress,
       }}
     >
