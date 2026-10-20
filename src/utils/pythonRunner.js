@@ -385,6 +385,52 @@ async function runWithResilientEngine(code, onInputRequest) {
       return evaluated.join("");
     }
 
+    // Subtraction with - (outside quotes)
+    const minusParts = splitOutsideQuotes(e, "-");
+    if (minusParts.length === 2 && minusParts[0] !== "") {
+      const left = evaluateExpression(minusParts[0], localScope);
+      const right = evaluateExpression(minusParts[1], localScope);
+      if (typeof left === "number" && typeof right === "number") {
+        return left - right;
+      }
+    }
+
+    // Multiplication with * (outside quotes)
+    const multParts = splitOutsideQuotes(e, "*");
+    if (multParts.length === 2) {
+      const left = evaluateExpression(multParts[0], localScope);
+      const right = evaluateExpression(multParts[1], localScope);
+      if (typeof left === "number" && typeof right === "number") {
+        return left * right;
+      }
+    }
+
+    // Logical OR (lowest precedence in boolean logic)
+    const orParts = splitOutsideQuotes(e, " or ");
+    if (orParts.length > 1) {
+      for (const part of orParts) {
+        const val = evaluateExpression(part, localScope);
+        if (val) return val;
+      }
+      return false;
+    }
+
+    // Logical AND
+    const andParts = splitOutsideQuotes(e, " and ");
+    if (andParts.length > 1) {
+      let lastVal = true;
+      for (const part of andParts) {
+        lastVal = evaluateExpression(part, localScope);
+        if (!lastVal) return false;
+      }
+      return lastVal;
+    }
+
+    // Logical NOT
+    if (e.startsWith("not ") && !e.startsWith("not_")) {
+      return !evaluateExpression(e.slice(4).trim(), localScope);
+    }
+
     // Comparison expression (check ==, !=, <=, >=, <, > outside quotes)
     const compOps = ["==", "!=", "<=", ">=", "<", ">"];
     for (const op of compOps) {
@@ -618,98 +664,263 @@ async function runWithResilientEngine(code, onInputRequest) {
         continue;
       }
 
-      // for in range(...) block
-      const forRangeMatch = line.match(/^for\s+([a-zA-Z_]\w*)\s+in\s+range\((.*?)\)\s*:/);
-      if (forRangeMatch) {
-        const loopVar = forRangeMatch[1];
-        const rangeArgs = forRangeMatch[2].split(",").map(a => parseInt(a.trim(), 10));
-        let start = 0;
-        let stop = 0;
-        if (rangeArgs.length === 1) {
-          stop = rangeArgs[0];
-        } else if (rangeArgs.length >= 2) {
-          start = rangeArgs[0];
-          stop = rangeArgs[1];
-        }
+      // Execute block recursively (handles if, elif, else, for loops, and assignments)
+      const executeBlock = async (linesToExec) => {
+        let idx = 0;
+        while (idx < linesToExec.length) {
+          const raw = linesToExec[idx];
+          const l = raw.trim();
+          if (!l) {
+            idx++;
+            continue;
+          }
 
-        const loopBody = [];
-        i++;
-        while (i < cleanLines.length && (cleanLines[i].startsWith("    ") || cleanLines[i].startsWith("\t"))) {
-          loopBody.push(cleanLines[i].trim());
-          i++;
-        }
-
-        for (let val = start; val < stop; val++) {
-          scope[loopVar] = val;
-          for (let bLine of loopBody) {
-            if (bLine.startsWith("print(")) {
-              const argStr = bLine.slice(6, -1);
-              const args = splitParams(argStr).map(p => evaluateExpression(p, scope));
-              outputLines.push(args.join(" "));
+          // if / elif / else block
+          const bIfMatch = l.match(/^if\s+(.*?)\s*:/);
+          if (bIfMatch) {
+            const branches = [{ condition: bIfMatch[1].trim(), body: [] }];
+            idx++;
+            while (idx < linesToExec.length && (linesToExec[idx].startsWith("    ") || linesToExec[idx].startsWith("\t"))) {
+              branches[0].body.push(linesToExec[idx]);
+              idx++;
             }
-          }
-        }
-        continue;
-      }
 
-      // if / elif / else block
-      const ifMatch = line.match(/^if\s+(.*?)\s*:/);
-      if (ifMatch) {
-        const branches = [{ condition: ifMatch[1].trim(), body: [] }];
-        i++;
-        while (i < cleanLines.length && (cleanLines[i].startsWith("    ") || cleanLines[i].startsWith("\t"))) {
-          branches[0].body.push(cleanLines[i].trim());
-          i++;
-        }
+            while (idx < linesToExec.length && linesToExec[idx].trim().match(/^elif\s+(.*?)\s*:/)) {
+              const elifM = linesToExec[idx].trim().match(/^elif\s+(.*?)\s*:/);
+              const branch = { condition: elifM[1].trim(), body: [] };
+              idx++;
+              while (idx < linesToExec.length && (linesToExec[idx].startsWith("    ") || linesToExec[idx].startsWith("\t"))) {
+                branch.body.push(linesToExec[idx]);
+                idx++;
+              }
+              branches.push(branch);
+            }
 
-        while (i < cleanLines.length && cleanLines[i].trim().match(/^elif\s+(.*?)\s*:/)) {
-          const elifMatch = cleanLines[i].trim().match(/^elif\s+(.*?)\s*:/);
-          const elifBranch = { condition: elifMatch[1].trim(), body: [] };
-          i++;
-          while (i < cleanLines.length && (cleanLines[i].startsWith("    ") || cleanLines[i].startsWith("\t"))) {
-            elifBranch.body.push(cleanLines[i].trim());
-            i++;
-          }
-          branches.push(elifBranch);
-        }
-
-        const elseBody = [];
-        if (i < cleanLines.length && cleanLines[i].trim().startsWith("else:")) {
-          i++;
-          while (i < cleanLines.length && (cleanLines[i].startsWith("    ") || cleanLines[i].startsWith("\t"))) {
-            elseBody.push(cleanLines[i].trim());
-            i++;
-          }
-        }
-
-        const runBranchBody = (bodyLines) => {
-          for (let bLine of bodyLines) {
-            if (bLine.startsWith("print(") && bLine.endsWith(")")) {
-              const argStr = bLine.slice(6, -1);
-              const args = splitParams(argStr).map(p => evaluateExpression(p, scope));
-              outputLines.push(args.join(" "));
-            } else {
-              const bAssign = bLine.match(/^([a-zA-Z_]\w*)\s*=\s*(.*)$/);
-              if (bAssign) {
-                scope[bAssign[1]] = evaluateExpression(bAssign[2], scope);
+            const elseLines = [];
+            if (idx < linesToExec.length && linesToExec[idx].trim().startsWith("else:")) {
+              idx++;
+              while (idx < linesToExec.length && (linesToExec[idx].startsWith("    ") || linesToExec[idx].startsWith("\t"))) {
+                elseLines.push(linesToExec[idx]);
+                idx++;
               }
             }
-          }
-        };
 
-        let executed = false;
-        for (const branch of branches) {
-          const cond = evaluateExpression(branch.condition, scope);
-          if (cond) {
-            runBranchBody(branch.body);
-            executed = true;
+            const unindent = (arr) => arr.map(lineStr => {
+              if (lineStr.startsWith("    ")) return lineStr.slice(4);
+              if (lineStr.startsWith("\t")) return lineStr.slice(1);
+              return lineStr.trimStart();
+            });
+
+            let executed = false;
+            for (const br of branches) {
+              const cond = evaluateExpression(br.condition, scope);
+              if (cond) {
+                await executeBlock(unindent(br.body));
+                executed = true;
+                break;
+              }
+            }
+            if (!executed && elseLines.length > 0) {
+              await executeBlock(unindent(elseLines));
+            }
+            continue;
+          }
+
+          // for loop (supports range and list iteration)
+          const bForMatch = l.match(/^for\s+([a-zA-Z_]\w*)\s+in\s+(.*?)\s*:/);
+          if (bForMatch) {
+            const loopVar = bForMatch[1];
+            const iterExpr = bForMatch[2].trim();
+            const loopLines = [];
+            idx++;
+            while (idx < linesToExec.length && (linesToExec[idx].startsWith("    ") || linesToExec[idx].startsWith("\t"))) {
+              loopLines.push(linesToExec[idx]);
+              idx++;
+            }
+
+            let items = [];
+            const rMatch = iterExpr.match(/^range\((.*?)\)$/);
+            if (rMatch) {
+              const rArgs = splitParams(rMatch[1]).map(a => evaluateExpression(a, scope));
+              let start = 0;
+              let stop = 0;
+              if (rArgs.length === 1) {
+                stop = Number(rArgs[0]);
+              } else if (rArgs.length >= 2) {
+                start = Number(rArgs[0]);
+                stop = Number(rArgs[1]);
+              }
+              for (let val = start; val < stop; val++) {
+                items.push(val);
+              }
+            } else {
+              const iterVal = evaluateExpression(iterExpr, scope);
+              if (Array.isArray(iterVal)) {
+                items = iterVal;
+              }
+            }
+
+            const unindent = (arr) => arr.map(lineStr => {
+              if (lineStr.startsWith("    ")) return lineStr.slice(4);
+              if (lineStr.startsWith("\t")) return lineStr.slice(1);
+              return lineStr.trimStart();
+            });
+            const unindentedLoop = unindent(loopLines);
+
+            for (const itm of items) {
+              scope[loopVar] = itm;
+              await executeBlock(unindentedLoop);
+            }
+            continue;
+          }
+
+          // Augmented assignment: var += expr, var -= expr
+          const bAugMatch = l.match(/^([a-zA-Z_]\w*)\s*(\+=|-=|\*=)\s*(.*)$/);
+          if (bAugMatch) {
+            const varName = bAugMatch[1];
+            const op = bAugMatch[2];
+            const val = evaluateExpression(bAugMatch[3], scope);
+            const cur = scope[varName] !== undefined ? scope[varName] : 0;
+            if (op === "+=") scope[varName] = cur + val;
+            else if (op === "-=") scope[varName] = cur - val;
+            else if (op === "*=") scope[varName] = cur * val;
+            idx++;
+            continue;
+          }
+
+          // Assignment with input()
+          const bInputAssignMatch = l.match(/^([a-zA-Z_]\w*)\s*=\s*(int\()?\s*input\((.*?)\)\s*\)?$/);
+          if (bInputAssignMatch) {
+            const varName = bInputAssignMatch[1];
+            const isInt = !!bInputAssignMatch[2];
+            const promptText = evaluateExpression(bInputAssignMatch[3] || "", scope);
+            let userInput = "Alex";
+            if (onInputRequest) {
+              userInput = await onInputRequest(promptText);
+            }
+            if (isInt) {
+              const parsed = parseInt(String(userInput).trim(), 10);
+              if (isNaN(parsed)) {
+                throw new Error(`ValueError: invalid literal for int() with base 10: '${userInput}'`);
+              }
+              scope[varName] = parsed;
+            } else {
+              scope[varName] = userInput != null ? String(userInput) : "";
+            }
+            idx++;
+            continue;
+          }
+
+          // Regular assignment
+          const bAssignMatch = l.match(/^([a-zA-Z_]\w*)\s*=\s*(.*)$/);
+          if (bAssignMatch) {
+            const varName = bAssignMatch[1];
+            const expr = bAssignMatch[2];
+            scope[varName] = evaluateExpression(expr, scope);
+            idx++;
+            continue;
+          }
+
+          // Dict assignment
+          const bDictAssignMatch = l.match(/^([a-zA-Z_]\w*)\[(.*?)\]\s*=\s*(.*)$/);
+          if (bDictAssignMatch) {
+            const dictName = bDictAssignMatch[1];
+            const k = evaluateExpression(bDictAssignMatch[2], scope);
+            const v = evaluateExpression(bDictAssignMatch[3], scope);
+            if (!scope[dictName]) scope[dictName] = {};
+            scope[dictName][k] = v;
+            idx++;
+            continue;
+          }
+
+          // list.append
+          const bAppendMatch = l.match(/^([a-zA-Z_]\w*)\.append\((.*)\)$/);
+          if (bAppendMatch) {
+            const listName = bAppendMatch[1];
+            const valToAppend = evaluateExpression(bAppendMatch[2], scope);
+            if (Array.isArray(scope[listName])) {
+              scope[listName].push(valToAppend);
+            }
+            idx++;
+            continue;
+          }
+
+          // print(...)
+          if (l.startsWith("print(") && l.endsWith(")")) {
+            const argStr = l.slice(6, -1);
+            const args = splitParams(argStr).map(p => evaluateExpression(p, scope));
+            outputLines.push(args.join(" "));
+            idx++;
+            continue;
+          }
+
+          // Method calls
+          const bMethodMatch = l.match(/^([a-zA-Z_]\w*)\.([a-zA-Z_]\w*)\((.*)\)$/);
+          if (bMethodMatch && scope[bMethodMatch[1]] && typeof scope[bMethodMatch[1]][bMethodMatch[2]] === "function") {
+            const obj = scope[bMethodMatch[1]];
+            const fn = obj[bMethodMatch[2]];
+            const argStr = bMethodMatch[3].trim();
+            const args = argStr ? splitParams(argStr).map(a => evaluateExpression(a, scope)) : [];
+            fn(...args);
+            idx++;
+            continue;
+          }
+
+          idx++;
+        }
+      };
+
+      // Top-level if / elif / else block
+      const ifMatch = line.match(/^if\s+(.*?)\s*:/);
+      if (ifMatch) {
+        const remainingLines = cleanLines.slice(i);
+        // Find how many lines are part of this if-elif-else tree
+        let scan = 1;
+        while (i + scan < cleanLines.length) {
+          const sl = cleanLines[i + scan];
+          if (sl.startsWith("    ") || sl.startsWith("\t") || sl.trim().startsWith("elif") || sl.trim().startsWith("else:")) {
+            scan++;
+          } else if (!sl.trim()) {
+            scan++;
+          } else {
             break;
           }
         }
+        await executeBlock(cleanLines.slice(i, i + scan));
+        i += scan;
+        continue;
+      }
 
-        if (!executed && elseBody.length > 0) {
-          runBranchBody(elseBody);
+      // Top-level for loop block
+      const forMatch = line.match(/^for\s+([a-zA-Z_]\w*)\s+in\s+(.*?)\s*:/);
+      if (forMatch) {
+        let scan = 1;
+        while (i + scan < cleanLines.length) {
+          const sl = cleanLines[i + scan];
+          if (sl.startsWith("    ") || sl.startsWith("\t")) {
+            scan++;
+          } else if (!sl.trim()) {
+            scan++;
+          } else {
+            break;
+          }
         }
+        await executeBlock(cleanLines.slice(i, i + scan));
+        i += scan;
+        continue;
+      }
+
+      // Top-level augmented assignment
+      const augMatch = line.match(/^([a-zA-Z_]\w*)\s*(\+=|-=|\*=)\s*(.*)$/);
+      if (augMatch) {
+        const varName = augMatch[1];
+        const op = augMatch[2];
+        const val = evaluateExpression(augMatch[3], scope);
+        const cur = scope[varName] !== undefined ? scope[varName] : 0;
+        if (op === "+=") scope[varName] = cur + val;
+        else if (op === "-=") scope[varName] = cur - val;
+        else if (op === "*=") scope[varName] = cur * val;
+        i++;
         continue;
       }
 
