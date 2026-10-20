@@ -33,7 +33,8 @@ export function QuestMapView() {
     selectMission,
     navigateTo,
     filterBiome,
-    setFilterBiome
+    setFilterBiome,
+    activeBiome
   } = useGameState();
 
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -62,11 +63,17 @@ export function QuestMapView() {
     soundEngine.playClick();
     selectMission(missionId);
 
-    // If mission is 1 or 2 (Undersea Reef)
-    if (missionId === 1 || missionId === 2) {
-      const isLocked = missionId === 2 && !completedMissions.includes(1);
+    // If mission is 1 (Level 1: Jumping Game)
+    if (missionId === 1) {
+      navigateTo("mission_lab", 1);
+      return;
+    }
+
+    // If mission is 2 (Level 2: 3D Undersea Reef)
+    if (missionId === 2) {
+      const isLocked = !completedMissions.includes(1);
       if (!isLocked) {
-        navigateTo("mission_lab", missionId);
+        navigateTo("undersea_reef");
         return;
       }
     }
@@ -88,17 +95,6 @@ export function QuestMapView() {
   const handleBiomeClick = (biomeKey) => {
     soundEngine.playClick();
     setFilterBiome(biomeKey);
-
-    if (biomeKey === "ocean") {
-      navigateTo("undersea_reef");
-    } else if (biomeKey === "forest") {
-      navigateTo("eco_woods");
-    } else {
-      const bObj = BIOMES.find((b) => b.key === biomeKey);
-      if (bObj) {
-        setSelectedBiomePreview(bObj);
-      }
-    }
   };
 
   const getMissionStatus = (lvl) => {
@@ -111,11 +107,92 @@ export function QuestMapView() {
     return "locked";
   };
 
+  // Contextual Active Expedition logic for the refined continuation card
+  const isSpecificBiome = filterBiome !== "all";
+  const targetBiomeKey = isSpecificBiome ? filterBiome : (activeBiome || "ocean");
+  const targetBiome = BIOMES.find((b) => b.key === targetBiomeKey) || BIOMES[1];
+
+  const isOcean = targetBiomeKey === "ocean";
+  const isForest = targetBiomeKey === "forest";
+  const isOceanL1Done = completedMissions.includes(1);
+  const isOceanL2Done = completedMissions.includes(2);
+  const isForestUnlocked = isOceanL1Done;
+  const isForestDone = completedMissions.includes(3) && completedMissions.includes(4);
+
+  const eyebrowLabel = "YOUR EXPEDITION";
+  const biomeTitle = targetBiome.title || targetBiome.name;
+  let biomeSubtitle = "";
+  let statusText = "Ready";
+  let statusBg = "bg-[#F0F5F2] text-[#526B5F]";
+  let isCardLocked = false;
+  let actionLabel = "Resume";
+  let actionDestination = () => navigateTo("mission_lab", 1);
+  let actionButtonBg = "bg-[#1E7268] hover:bg-[#15564E]";
+
+  if (isOcean) {
+    if (isOceanL1Done && isOceanL2Done) {
+      biomeSubtitle = "Reef Restored · Complete";
+      statusText = "Completed";
+      statusBg = "bg-[#E6F5EC] text-[#2A6B53]";
+      actionLabel = "Revisit";
+      actionDestination = () => navigateTo("mission_lab", 1);
+    } else if (isOceanL1Done) {
+      biomeSubtitle = "Level 2 · 3D Experience";
+      statusText = "In progress";
+      statusBg = "bg-[#EAF5EE] text-[#2A6B53]";
+      actionLabel = isSpecificBiome ? "Open" : "Resume";
+      actionDestination = () => navigateTo("mission_lab", 1);
+    } else if (activeBiome === "ocean") {
+      biomeSubtitle = "Level 1 · Jumping Game";
+      statusText = "In progress";
+      statusBg = "bg-[#EAF5EE] text-[#2A6B53]";
+      actionLabel = "Resume";
+      actionDestination = () => navigateTo("mission_lab", 1);
+    } else {
+      biomeSubtitle = "Level 1 · Jumping Game";
+      statusText = "Ready";
+      statusBg = "bg-[#EAF5EE] text-[#2A6B53]";
+      actionLabel = "Start";
+      actionDestination = () => navigateTo("mission_lab", 1);
+    }
+  } else if (isForest) {
+    actionButtonBg = "bg-[#2D6A4F] hover:bg-[#1F4F39]";
+    if (!isForestUnlocked) {
+      biomeSubtitle = "Unlocks after Undersea Reef";
+      statusText = "Locked";
+      statusBg = "bg-[#F4F6F4] text-[#8C9C92]";
+      isCardLocked = true;
+    } else if (isForestDone) {
+      biomeSubtitle = "Eco Woods · Complete";
+      statusText = "Completed";
+      statusBg = "bg-[#E6F5EC] text-[#2A6B53]";
+      actionLabel = "Revisit";
+      actionDestination = () => navigateTo("eco_woods");
+    } else if (activeBiome === "forest") {
+      biomeSubtitle = "Level 3 · Data Sensors";
+      statusText = "In progress";
+      statusBg = "bg-[#EAF5EE] text-[#2D6A4F]";
+      actionLabel = "Resume";
+      actionDestination = () => navigateTo("eco_woods");
+    } else {
+      biomeSubtitle = "Level 3 · Data Sensors";
+      statusText = "Available";
+      statusBg = "bg-[#EAF5EE] text-[#2D6A4F]";
+      actionLabel = "Enter";
+      actionDestination = () => navigateTo("eco_woods");
+    }
+  } else {
+    biomeSubtitle = "Upcoming Chapter";
+    statusText = "Locked";
+    statusBg = "bg-[#F4F6F4] text-[#8C9C92]";
+    isCardLocked = true;
+  }
+
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6 animate-fadeIn">
       {/* Top Header Section with Expedition Title and Progress Stats */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+        <div className="max-w-xl">
           <div className="text-[11px] font-bold tracking-widest text-[#7E9387] uppercase mb-1">
             Explore. Learn. Restore.
           </div>
@@ -127,10 +204,11 @@ export function QuestMapView() {
           </p>
         </div>
 
-        {/* Missions Progress Badge */}
-        <div className="flex items-center gap-3">
-          <div className="bg-[#FFFFFF] border border-[#DEECE3] rounded-2xl p-4 shadow-soft flex items-center gap-3.5 self-start">
-            <div className="w-10 h-10 rounded-xl bg-[#EAF5EE] text-[#2A6B53] flex items-center justify-center">
+        {/* Missions Progress Badge & Refined Active Expedition Continuation Card */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-shrink-0">
+          {/* Continental Missions Summary */}
+          <div className="bg-[#FFFFFF] border border-[#DEECE3] rounded-2xl p-4 shadow-soft flex items-center gap-3.5 flex-shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-[#EAF5EE] text-[#2A6B53] flex items-center justify-center flex-shrink-0">
               <BookOpen className="w-5 h-5" />
             </div>
             <div>
@@ -143,29 +221,62 @@ export function QuestMapView() {
             </div>
           </div>
 
-          {/* Biome Shortcut Buttons */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                soundEngine.playClick();
-                navigateTo("undersea_reef");
-              }}
-              className="py-3 px-4 rounded-2xl bg-[#1E7268] hover:bg-[#15564E] text-white font-extrabold text-xs shadow-soft transition-all flex items-center gap-2"
-            >
-              <Waves className="w-4 h-4 text-[#A8EAE2]" />
-              <span>Undersea Reef</span>
-            </button>
+          {/* Active Expedition Continuation Card (Compact, Horizontal, Balanced) */}
+          <div className="bg-[#FFFFFF] border border-[#DEECE3] rounded-2xl p-3.5 sm:p-4 shadow-soft flex items-center justify-between gap-3 sm:gap-4 flex-1 sm:flex-initial min-w-0 sm:w-80 md:w-84">
+            <div className="flex items-center gap-3 min-w-0">
+              <div
+                className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                  isOcean
+                    ? "bg-[#E6F5F4] text-[#1E7268]"
+                    : isForest
+                    ? "bg-[#E8F5E9] text-[#2D6A4F]"
+                    : "bg-[#F0F5F2] text-[#4A6458]"
+                }`}
+              >
+                {isOcean ? (
+                  <Waves className="w-5 h-5 text-[#1E7268]" />
+                ) : isForest ? (
+                  <Trees className="w-5 h-5 text-[#2D6A4F]" />
+                ) : (
+                  <Compass className="w-5 h-5 text-[#4A6458]" />
+                )}
+              </div>
 
-            <button
-              onClick={() => {
-                soundEngine.playClick();
-                navigateTo("eco_woods");
-              }}
-              className="py-3 px-4 rounded-2xl bg-[#2D6A4F] hover:bg-[#1F4F39] text-white font-extrabold text-xs shadow-soft transition-all flex items-center gap-2"
-            >
-              <Trees className="w-4 h-4 text-[#B7E4C7]" />
-              <span>Eco Woods</span>
-            </button>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#7E9387]">
+                    {eyebrowLabel}
+                  </span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold leading-none ${statusBg}`}>
+                    {statusText}
+                  </span>
+                </div>
+                <h3 className="text-sm font-black text-[#172E26] tracking-tight leading-snug truncate">
+                  {biomeTitle}
+                </h3>
+                <p className="text-[11px] text-[#6E8076] font-medium leading-tight truncate mt-0.5">
+                  {biomeSubtitle}
+                </p>
+              </div>
+            </div>
+
+            {!isCardLocked ? (
+              <button
+                onClick={() => {
+                  soundEngine.playClick();
+                  actionDestination();
+                }}
+                className={`py-2 px-3.5 rounded-xl ${actionButtonBg} text-white font-bold text-xs shadow-soft transition-all flex items-center gap-1.5 flex-shrink-0 cursor-pointer active:scale-95`}
+              >
+                <span>{actionLabel}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            ) : (
+              <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#F4F7F4] text-[#8C9C92] text-xs font-semibold flex-shrink-0">
+                <Lock className="w-3 h-3 text-[#A0B0A7]" />
+                <span>Locked</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -179,19 +290,8 @@ export function QuestMapView() {
           return (
             <button
               key={b.key}
-              onClick={() => {
-                if (b.key === "ocean") {
-                  handleBiomeClick("ocean");
-                } else if (b.key === "forest") {
-                  handleBiomeClick("forest");
-                } else {
-                  setFilterBiome(b.key);
-                  if (b.key !== "all") {
-                    setSelectedBiomePreview(b);
-                  }
-                }
-              }}
-              className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-2 ${
+              onClick={() => handleBiomeClick(b.key)}
+              className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer ${
                 isSelected
                   ? "bg-[#FFFFFF] border-2 border-[#2A6B53] text-[#2A6B53] shadow-soft"
                   : "bg-[#F0F4F1] border border-transparent text-[#55695E] hover:bg-[#E6EDE8]"
@@ -233,47 +333,8 @@ export function QuestMapView() {
               Six biomes. One big adventure.
             </h2>
             <p className="text-xs text-[#658273] mt-0.5">
-              Click <strong className="text-[#1E7268]">Undersea Reef</strong> or <strong className="text-[#2D6A4F]">Eco Woods</strong> to explore the playable expedition chapters.
+              Click any biome island or mission node to explore the expedition.
             </p>
-          </div>
-
-          {/* Active Biome Badges */}
-          <div className="flex items-center gap-2">
-            <div
-              onClick={() => navigateTo("undersea_reef")}
-              className="cursor-pointer bg-[#FFFFFF] border border-[#BCE4DD] hover:border-[#1E7268] px-3.5 py-2 rounded-2xl shadow-sm flex items-center gap-2 transition-all group"
-            >
-              <div className="w-6 h-6 rounded-lg bg-[#E6F5F4] text-[#1E7268] flex items-center justify-center font-bold text-xs group-hover:scale-105 transition-transform">
-                01
-              </div>
-              <div>
-                <div className="text-[9px] font-bold text-[#7E9387] uppercase tracking-wider">
-                  World 01
-                </div>
-                <div className="text-xs font-black text-[#172E26] group-hover:text-[#1E7268] flex items-center gap-1">
-                  <span>Undersea Reef</span>
-                  <ArrowRight className="w-3 h-3 text-[#1E7268]" />
-                </div>
-              </div>
-            </div>
-
-            <div
-              onClick={() => navigateTo("eco_woods")}
-              className="cursor-pointer bg-[#FFFFFF] border border-[#B7E4C7] hover:border-[#2D6A4F] px-3.5 py-2 rounded-2xl shadow-sm flex items-center gap-2 transition-all group"
-            >
-              <div className="w-6 h-6 rounded-lg bg-[#E8F5E9] text-[#2D6A4F] flex items-center justify-center font-bold text-xs group-hover:scale-105 transition-transform">
-                02
-              </div>
-              <div>
-                <div className="text-[9px] font-bold text-[#7E9387] uppercase tracking-wider">
-                  World 02
-                </div>
-                <div className="text-xs font-black text-[#172E26] group-hover:text-[#2D6A4F] flex items-center gap-1">
-                  <span>Eco Woods</span>
-                  <ArrowRight className="w-3 h-3 text-[#2D6A4F]" />
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -460,32 +521,21 @@ export function QuestMapView() {
             </div>
 
             <div className="space-y-2 pt-4 border-t border-[#EDF3ED]">
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => {
-                    setSelectedBiomePreview(null);
-                    navigateTo("undersea_reef");
-                  }}
-                  className="py-3 px-3 rounded-2xl bg-[#1E7268] hover:bg-[#15564E] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5"
-                >
-                  <span>Undersea Reef</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() => {
-                    setSelectedBiomePreview(null);
-                    navigateTo("eco_woods");
-                  }}
-                  className="py-3 px-3 rounded-2xl bg-[#2D6A4F] hover:bg-[#1F4F39] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5"
-                >
-                  <span>Eco Woods</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
+              <button
+                onClick={() => {
+                  setSelectedBiomePreview(null);
+                  navigateTo("mission_lab", 1);
+                }}
+                className="w-full py-3.5 px-4 rounded-2xl bg-[#1E7268] hover:bg-[#15564E] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Waves className="w-4 h-4 text-[#A8EAE2]" />
+                <span>Begin at Undersea Reef (Level 1)</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
 
               <button
                 onClick={() => setSelectedBiomePreview(null)}
-                className="w-full py-2 text-xs font-bold text-[#647C70] hover:text-[#172E26]"
+                className="w-full py-2 text-xs font-bold text-[#647C70] hover:text-[#172E26] cursor-pointer"
               >
                 Close Preview
               </button>
@@ -572,19 +622,30 @@ export function QuestMapView() {
                 <div className="space-y-2">
                   <div className="p-3 bg-[#FFF9EE] border border-[#F6E5B8] rounded-xl text-xs text-[#8C621F] flex items-center gap-2">
                     <Lock className="w-4 h-4 text-[#D97706] flex-shrink-0" />
-                    <span>Locked: Complete Mission 1 (First Day) first to unlock Identity.</span>
+                    <span>Locked: Complete Level 1 (Python Jumping Game) first to unlock Level 2: 3D Experience.</span>
                   </div>
                   <button
                     onClick={() => {
                       setDrawerOpen(false);
                       navigateTo("mission_lab", 1);
                     }}
-                    className="w-full py-3.5 px-6 rounded-2xl bg-[#2A6B53] hover:bg-[#205541] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2"
+                    className="w-full py-3.5 px-6 rounded-2xl bg-[#2A6B53] hover:bg-[#205541] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <span>Play Mission 1: First Day</span>
+                    <span>Play Level 1: Python Jumping Game</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
+              ) : activeMission.level === 2 && completedMissions.includes(1) ? (
+                <button
+                  onClick={() => {
+                    setDrawerOpen(false);
+                    navigateTo("undersea_reef");
+                  }}
+                  className="w-full py-3.5 px-6 rounded-2xl bg-[#1E7268] hover:bg-[#15564E] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>{completedMissions.includes(2) ? "Revisit Level 2: 3D Experience" : "Enter Level 2: 3D Experience"}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
               ) : activeMission.level > 2 ? (
                 <div className="space-y-2">
                   <div className="p-3 bg-[#FFF9EE] border border-[#F6E5B8] rounded-xl text-xs text-[#8C621F] flex items-center gap-2">
@@ -594,11 +655,11 @@ export function QuestMapView() {
                   <button
                     onClick={() => {
                       setDrawerOpen(false);
-                      navigateTo("undersea_reef");
+                      navigateTo("mission_lab", 1);
                     }}
-                    className="w-full py-3.5 px-6 rounded-2xl bg-[#1E7268] hover:bg-[#15564E] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2"
+                    className="w-full py-3.5 px-6 rounded-2xl bg-[#1E7268] hover:bg-[#15564E] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <span>Go to Undersea Reef</span>
+                    <span>Go to Undersea Reef (Level 1)</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
@@ -608,9 +669,9 @@ export function QuestMapView() {
                     setDrawerOpen(false);
                     navigateTo("mission_lab", activeMission.level);
                   }}
-                  className="w-full py-3.5 px-6 rounded-2xl bg-[#2A6B53] hover:bg-[#205541] active:scale-[0.98] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2"
+                  className="w-full py-3.5 px-6 rounded-2xl bg-[#2A6B53] hover:bg-[#205541] active:scale-[0.98] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <span>{isCompleted ? "Revisit mission" : "Begin mission"}</span>
+                  <span>{isCompleted ? "Replay Level 1: Jumping Game" : "Begin Level 1: Jumping Game"}</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               )}

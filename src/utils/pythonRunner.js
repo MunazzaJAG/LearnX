@@ -83,11 +83,35 @@ builtins.input = custom_input
       }
 
       await pyodideInstance.runPythonAsync(code);
+
+      // Extract real Python globals from Pyodide
+      let pyScope = {};
+      try {
+        const rawGlobals = pyodideInstance.globals.toJs();
+        const ignoredKeys = new Set([
+          "builtins", "learnx_env", "custom_input", "__name__", "__doc__", "__package__",
+          "__loader__", "__spec__", "__annotations__", "__builtins__"
+        ]);
+        if (rawGlobals instanceof Map) {
+          rawGlobals.forEach((val, key) => {
+            if (!ignoredKeys.has(key) && !key.startsWith("__") && typeof val !== "function") {
+              pyScope[key] = val;
+            }
+          });
+        }
+      } catch (scopeErr) {
+        pyScope = extractPythonScope(code);
+      }
+
+      // Merge with extractPythonScope to guarantee all variables are caught
+      const staticScope = extractPythonScope(code);
+      const combinedScope = { ...staticScope, ...pyScope };
+
       return {
         output: stdout.join("\n"),
         error: stderr.length > 0 ? stderr.join("\n") : null,
         isSuccess: true,
-        scope: extractPythonScope(code)
+        scope: combinedScope
       };
     } catch (pyErr) {
       console.warn("Pyodide error, evaluating with resilient engine:", pyErr);
@@ -211,6 +235,16 @@ async function runWithResilientEngine(code, onInputRequest) {
     // Number literal
     if (/^-?\d+$/.test(e)) return parseInt(e, 10);
     if (/^-?\d+\.\d+$/.test(e)) return parseFloat(e);
+
+    // f-string literal: f"..." or f'...'
+    const fStrMatch = e.match(/^f(["'])([\s\S]*)\1$/);
+    if (fStrMatch) {
+      let rawContent = fStrMatch[2];
+      return rawContent.replace(/\{([^}]+)\}/g, (match, exprInside) => {
+        const evaluated = evaluateExpression(exprInside.trim(), localScope);
+        return evaluated !== undefined && evaluated !== null ? String(evaluated) : match;
+      });
+    }
 
     // String literal
     if ((e.startsWith('"') && e.endsWith('"')) || (e.startsWith("'") && e.endsWith("'"))) {
@@ -808,6 +842,17 @@ export function extractPythonScope(code) {
       const commentIdx = valStr.indexOf("#");
       if (commentIdx !== -1) {
         valStr = valStr.slice(0, commentIdx).trim();
+      }
+
+      // Check f-strings
+      const fMatch = valStr.match(/^f(["'])([\s\S]*)\1$/);
+      if (fMatch) {
+        const interpolated = fMatch[2].replace(/\{([^}]+)\}/g, (match, exprInside) => {
+          const trimmedExpr = exprInside.trim();
+          return scope[trimmedExpr] !== undefined ? String(scope[trimmedExpr]) : match;
+        });
+        scope[varName] = interpolated;
+        continue;
       }
 
       if ((valStr.startsWith('"') && valStr.endsWith('"')) || (valStr.startsWith("'") && valStr.endsWith("'"))) {

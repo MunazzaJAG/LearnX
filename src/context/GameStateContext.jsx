@@ -14,38 +14,83 @@ const GameStateContext = createContext(null);
 
 const STORAGE_KEY = "learnx_game_state_v1";
 
+// Calendar date helper functions for genuine local study streak tracking
+export const getLocalCalendarDate = (d = new Date()) => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+export const getDayDifference = (priorDateStr, currentDateStr) => {
+  if (!priorDateStr || !currentDateStr) return null;
+  const [y1, m1, d1] = priorDateStr.split("-").map(Number);
+  const [y2, m2, d2] = currentDateStr.split("-").map(Number);
+  const utc1 = Date.UTC(y1, m1 - 1, d1);
+  const utc2 = Date.UTC(y2, m2 - 1, d2);
+  const msPerDay = 1000 * 60 * 60 * 24;
+  return Math.round((utc2 - utc1) / msPerDay);
+};
+
+export const calculateUpdatedStreak = (prevStreak, lastStudyDate, todayDateStr) => {
+  if (!lastStudyDate) {
+    return 1;
+  }
+  const diff = getDayDifference(lastStudyDate, todayDateStr);
+  if (diff === 0) {
+    // Same calendar day: streak remains unchanged
+    return prevStreak || 1;
+  } else if (diff === 1) {
+    // Consecutive calendar day: increment streak by 1
+    return (prevStreak || 1) + 1;
+  } else if (diff > 1) {
+    // Missed one or more days: reset streak to 1
+    return 1;
+  }
+  // Clock moved backwards or anomaly: keep current streak
+  return prevStreak || 1;
+};
+
 const INITIAL_STATE = {
   activeView: "dashboard",
-  currentMissionId: 2,
-  completedMissions: [1],
-  xp: 50,
-  streakDays: 2,
-  badges: ["first_line"],
+  currentMissionId: 1,
+  completedMissions: [],
+  xp: 0,
+  streakDays: 1,
+  lastStudyDate: null,
+  badges: [],
 
-  badgeDates: {
-    first_line: "2026-09-09",
-  },
+  badgeDates: {},
 
   profile: {
     name: "Alex",
     email: "alex@nexa.dev",
     studentId: "NEXA-001",
     role: "Aspiring Developer",
-    level: 2,
+    level: 1,
     avatarInitials: "AL",
   },
 
-  expeditionLog: [
-    {
-      id: 1,
-      title: "First Day",
-      date: "2026-09-09",
-      xp: 50,
-    },
-  ],
+  expeditionLog: [],
 
   soundEnabled: true,
   filterBiome: "all",
+  activeBiome: null,
+
+  underseaProgress: {
+    completedSublevels: [],
+    currentSublevel: 1,
+    restorationPercent: 0,
+    diverCustomization: {
+      suitColor: "#1b8a7a",
+      accentColor: "#52e3c2",
+      visorColor: "#20d3d3",
+      tankColor: "#e2e8f0",
+      finsColor: "#0f766e",
+    },
+    unlockedEquipment: [],
+    collectibles: [],
+  },
 };
 
 export function GameStateProvider({ children }) {
@@ -60,7 +105,31 @@ export function GameStateProvider({ children }) {
   // Main Game State
   // -----------------------------
 
-  const [state, setState] = useState(INITIAL_STATE);
+  const [state, setState] = useState(() => {
+    try {
+      const saved = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          ...INITIAL_STATE,
+          ...parsed,
+          lastStudyDate: parsed.lastStudyDate || null,
+          activeBiome: parsed.activeBiome !== undefined ? parsed.activeBiome : null,
+          profile: {
+            ...INITIAL_STATE.profile,
+            ...(parsed.profile || {}),
+          },
+          underseaProgress: {
+            ...INITIAL_STATE.underseaProgress,
+            ...(parsed.underseaProgress || {}),
+          },
+        };
+      }
+    } catch (e) {
+      console.warn("Failed to read local game state:", e);
+    }
+    return INITIAL_STATE;
+  });
 
   // Prevents saving before Supabase
   // data has finished loading.
@@ -558,17 +627,33 @@ export function GameStateProvider({ children }) {
   ) => {
     soundEngine.playClick();
 
-    setState((prev) => ({
-      ...prev,
+    setState((prev) => {
+      let nextActiveBiome = prev.activeBiome;
 
-      activeView: view,
+      // Track active biome based on the game or mission the user has actually entered
+      if (view === "undersea_reef" || view === "level1_game") {
+        nextActiveBiome = "ocean";
+      } else if (view === "eco_woods") {
+        nextActiveBiome = "forest";
+      } else if (view === "mission_lab") {
+        const targetId = missionId || prev.currentMissionId;
+        const targetMission = LEVELS_DATA.find((m) => m.level === targetId);
+        if (targetMission?.biomeKey) {
+          nextActiveBiome = targetMission.biomeKey;
+        }
+      }
 
-      ...(missionId
-        ? {
-            currentMissionId: missionId,
-          }
-        : {}),
-    }));
+      return {
+        ...prev,
+        activeView: view,
+        activeBiome: nextActiveBiome,
+        ...(missionId
+          ? {
+              currentMissionId: missionId,
+            }
+          : {}),
+      };
+    });
   };
 
   // -----------------------------
@@ -583,7 +668,7 @@ export function GameStateProvider({ children }) {
   };
 
   // -----------------------------
-  // FILTER BIOME
+  // FILTER BIOME (Selection)
   // -----------------------------
 
   const setFilterBiome = (biomeKey) => {
@@ -592,6 +677,17 @@ export function GameStateProvider({ children }) {
     setState((prev) => ({
       ...prev,
       filterBiome: biomeKey,
+    }));
+  };
+
+  // -----------------------------
+  // SET ACTIVE BIOME (Gameplay)
+  // -----------------------------
+
+  const setActiveBiome = (biomeKey) => {
+    setState((prev) => ({
+      ...prev,
+      activeBiome: biomeKey,
     }));
   };
 
@@ -688,9 +784,7 @@ export function GameStateProvider({ children }) {
       (m) => m.level === missionId
     );
 
-    const today = new Date()
-      .toISOString()
-      .split("T")[0];
+    const today = getLocalCalendarDate();
 
     setState((prev) => {
       const alreadyCompleted =
@@ -708,6 +802,10 @@ export function GameStateProvider({ children }) {
       const newXP = alreadyCompleted
         ? prev.xp
         : prev.xp + rewardXP;
+
+      // Genuine study streak calculation using local calendar day semantics
+      const priorDate = prev.lastStudyDate || (prev.expeditionLog?.length > 0 ? prev.expeditionLog[prev.expeditionLog.length - 1].date : null);
+      const newStreak = calculateUpdatedStreak(prev.streakDays, priorDate, today);
 
       let newBadges = [...prev.badges];
 
@@ -744,15 +842,138 @@ export function GameStateProvider({ children }) {
 
       return {
         ...prev,
-
         completedMissions: newCompleted,
         xp: newXP,
+        streakDays: newStreak,
+        lastStudyDate: today,
         badges: newBadges,
         badgeDates: newBadgeDates,
         expeditionLog: newLog,
         currentMissionId: nextMissionId,
       };
     });
+  };
+
+  // -----------------------------
+  // COMPLETE UNDERSEA SUBLEVEL
+  // -----------------------------
+
+  const completeUnderseaSublevel = ({
+    sublevelNum,
+    rewardXP = 50,
+    equipmentUnlock = null,
+    badgeUnlock = null,
+    restorationDelta = 8,
+  }) => {
+    const today = getLocalCalendarDate();
+
+    setState((prev) => {
+      const currentUndersea = prev.underseaProgress || {
+        completedSublevels: [],
+        currentSublevel: 1,
+        restorationPercent: 0,
+        diverCustomization: {
+          suitColor: "#1b8a7a",
+          accentColor: "#52e3c2",
+          visorColor: "#20d3d3",
+          tankColor: "#e2e8f0",
+          finsColor: "#0f766e",
+        },
+        unlockedEquipment: [],
+        collectibles: [],
+      };
+
+      const alreadyCompleted =
+        currentUndersea.completedSublevels.includes(sublevelNum);
+
+      const newCompleted = alreadyCompleted
+        ? currentUndersea.completedSublevels
+        : [...currentUndersea.completedSublevels, sublevelNum].sort((a, b) => a - b);
+
+      const newXP = alreadyCompleted ? prev.xp : prev.xp + rewardXP;
+
+      // Genuine study streak calculation using local calendar day semantics
+      const priorDate = prev.lastStudyDate || (prev.expeditionLog?.length > 0 ? prev.expeditionLog[prev.expeditionLog.length - 1].date : null);
+      const newStreak = calculateUpdatedStreak(prev.streakDays, priorDate, today);
+
+      // Badges
+      let newBadges = [...prev.badges];
+      let newBadgeDates = { ...prev.badgeDates };
+      if (badgeUnlock && !newBadges.includes(badgeUnlock.id)) {
+        newBadges.push(badgeUnlock.id);
+        newBadgeDates[badgeUnlock.id] = today;
+      }
+
+      // Equipment
+      let newEquipment = [...currentUndersea.unlockedEquipment];
+      if (
+        equipmentUnlock &&
+        !newEquipment.some((e) => e.id === equipmentUnlock.id)
+      ) {
+        newEquipment.push(equipmentUnlock);
+      }
+
+      // Restoration: each sublevel contributes directly to 100% total
+      const newRestoration = Math.min(100, Math.round((newCompleted.length / 6) * 100));
+
+      // Advance current sublevel monotonically
+      const nextSublevel = Math.min(6, Math.max(currentUndersea.currentSublevel || 1, sublevelNum + 1));
+
+      // Also mark mission 2 complete in overall progression when all 6 Undersea sublevels are finished
+      let newCompletedMissions = [...prev.completedMissions];
+      if (newCompleted.length >= 6 && !newCompletedMissions.includes(2)) {
+        newCompletedMissions.push(2);
+      }
+
+      const newLog = alreadyCompleted
+        ? prev.expeditionLog
+        : [
+            ...prev.expeditionLog,
+            {
+              id: `reef_${sublevelNum}`,
+              title: `Undersea Reef - Sublevel ${sublevelNum}`,
+              date: today,
+              xp: rewardXP,
+            },
+          ];
+
+      return {
+        ...prev,
+        xp: newXP,
+        streakDays: newStreak,
+        lastStudyDate: today,
+        badges: newBadges,
+        badgeDates: newBadgeDates,
+        expeditionLog: newLog,
+        completedMissions: newCompletedMissions,
+        underseaProgress: {
+          ...currentUndersea,
+          completedSublevels: newCompleted,
+          currentSublevel: nextSublevel,
+          restorationPercent: newRestoration,
+          unlockedEquipment: newEquipment,
+        },
+      };
+    });
+  };
+
+  // -----------------------------
+  // UPDATE DIVER CUSTOMIZATION
+  // -----------------------------
+
+  const updateDiverCustomization = (customization) => {
+    setState((prev) => ({
+      ...prev,
+      underseaProgress: {
+        ...(prev.underseaProgress || {}),
+        diverCustomization: {
+          ...((prev.underseaProgress &&
+            prev.underseaProgress.diverCustomization) ||
+            {}),
+          ...customization,
+        },
+      },
+    }));
   };
 
   // -----------------------------
@@ -815,9 +1036,12 @@ export function GameStateProvider({ children }) {
         navigateTo,
         selectMission,
         setFilterBiome,
+        setActiveBiome,
         toggleSound,
         updateProfile,
         completeMission,
+        completeUnderseaSublevel,
+        updateDiverCustomization,
         resetProgress,
       }}
     >

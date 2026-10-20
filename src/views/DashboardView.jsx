@@ -6,14 +6,30 @@ import { BADGES_DATA } from "../data/achievements";
 import { OceanReefArt, NovaMascot } from "../components/BiomeVectorArt";
 
 export function DashboardView() {
-  const { profile, xp, streakDays, badges, badgeDates, currentMissionId, navigateTo } = useGameState();
+  const { profile, xp, streakDays, badges, badgeDates, currentMissionId, navigateTo, completedMissions } = useGameState();
 
   const currentMission = LEVELS_DATA.find((m) => m.level === currentMissionId) || LEVELS_DATA[0];
+
+  const handleContinueJourney = () => {
+    if (!completedMissions?.includes(1)) {
+      navigateTo("mission_lab", 1);
+    } else if (!completedMissions?.includes(2)) {
+      navigateTo("undersea_reef");
+    } else {
+      navigateTo("mission_lab", currentMissionId || 3);
+    }
+  };
 
   // Most recent unlocked badge
   const recentBadgeId = badges[badges.length - 1];
   const recentBadge = BADGES_DATA.find((b) => b.id === recentBadgeId) || BADGES_DATA[0];
   const recentDate = badgeDates[recentBadge?.id] || "2026-09-09";
+
+  const nextMissionText = !completedMissions?.includes(1)
+    ? "Level 1: Python Jumping Game"
+    : !completedMissions?.includes(2)
+    ? "Level 2: 3D Undersea Reef Experience"
+    : currentMission.subtitle.toLowerCase();
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn">
@@ -44,11 +60,11 @@ export function DashboardView() {
                 A world worth bringing back to life.
               </h2>
               <p className="text-xs text-[#4F685B] leading-relaxed">
-                NOVA is waiting at {currentMission.biomeName}. Your next mission: {currentMission.subtitle.toLowerCase()}.
+                NOVA is waiting at {currentMission.biomeName}. Your next mission: {nextMissionText}.
               </p>
               <button
-                onClick={() => navigateTo("mission_lab", currentMission.level)}
-                className="mt-2 py-3 px-6 rounded-2xl bg-[#2A6B53] hover:bg-[#205541] active:scale-[0.98] text-white font-bold text-xs shadow-md transition-all flex items-center gap-2"
+                onClick={handleContinueJourney}
+                className="mt-2 py-3 px-6 rounded-2xl bg-[#2A6B53] hover:bg-[#205541] active:scale-[0.98] text-white font-bold text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer"
               >
                 <span>Continue journey</span>
               </button>
