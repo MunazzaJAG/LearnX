@@ -19,6 +19,15 @@ function drawRoundedRect(ctx, x, y, w, h, r = 6) {
   }
 }
 
+export const WILDWOOD_STATIONS = [
+  { num: 1, x: 420, y: 550, name: "Rusty the Fox", habitat: "Intake Clinic", task: "Diagnose Vitals (if/else)", barrierDesc: "Extend Broken Bridge" },
+  { num: 2, x: 960, y: 550, name: "Pip the Hare", habitat: "Mossy Burrow", task: "Assign Habitat (if/elif/else)", barrierDesc: "Sprout Spring Mushroom" },
+  { num: 3, x: 1500, y: 550, name: "Fern the Fawn", habitat: "Sunlit Meadow", task: "Pasture Clearance (and)", barrierDesc: "Unlock Turnstile Gate" },
+  { num: 4, x: 2120, y: 550, name: "Bramble the Hedgehog", habitat: "Storehouse", task: "Evening Feeding (for loop)", barrierDesc: "Power Canopy Elevator" },
+  { num: 5, x: 2700, y: 550, name: "Hoot the Owl", habitat: "Willow Pond", task: "Pantry Stockpile (lists)", barrierDesc: "Lower River Drawbridge" },
+  { num: 6, x: 3250, y: 550, name: "Ancient Portal", habitat: "Grand Plaza", task: "Final Sanctuary Audit", barrierDesc: "Activate Portal to Level 2" },
+];
+
 /**
  * WildwoodPlatformerCanvas
  * A high-performance, delta-time 2D Canvas platformer for Wildwood Sanctuary.
