@@ -91,6 +91,14 @@ const INITIAL_STATE = {
     unlockedEquipment: [],
     collectibles: [],
   },
+
+  ecoWoodsProgress: {
+    completedMissions: [],
+    currentMission: 1,
+    restorationPercent: 0,
+    unlockedTools: [],
+    collectibles: [],
+  },
 };
 
 export function GameStateProvider({ children }) {
@@ -122,6 +130,10 @@ export function GameStateProvider({ children }) {
           underseaProgress: {
             ...INITIAL_STATE.underseaProgress,
             ...(parsed.underseaProgress || {}),
+          },
+          ecoWoodsProgress: {
+            ...INITIAL_STATE.ecoWoodsProgress,
+            ...(parsed.ecoWoodsProgress || {}),
           },
         };
       }
@@ -633,7 +645,7 @@ export function GameStateProvider({ children }) {
       // Track active biome based on the game or mission the user has actually entered
       if (view === "undersea_reef" || view === "level1_game") {
         nextActiveBiome = "ocean";
-      } else if (view === "eco_woods") {
+      } else if (view === "eco_woods" || view === "living_forest" || view === "eco_woods_3d") {
         nextActiveBiome = "forest";
       } else if (view === "mission_lab") {
         const targetId = missionId || prev.currentMissionId;
@@ -977,6 +989,101 @@ export function GameStateProvider({ children }) {
   };
 
   // -----------------------------
+  // COMPLETE ECO WOODS MISSION
+  // -----------------------------
+
+  const completeEcoWoodsMission = ({
+    missionNum,
+    rewardXP = 60,
+    toolUnlock = null,
+    badgeUnlock = null,
+    restorationDelta = 16,
+  }) => {
+    const today = getLocalCalendarDate();
+
+    setState((prev) => {
+      const currentEco = prev.ecoWoodsProgress || {
+        completedMissions: [],
+        currentMission: 1,
+        restorationPercent: 0,
+        unlockedTools: [],
+        collectibles: [],
+      };
+
+      const alreadyCompleted =
+        currentEco.completedMissions.includes(missionNum);
+
+      const newCompleted = alreadyCompleted
+        ? currentEco.completedMissions
+        : [...currentEco.completedMissions, missionNum].sort((a, b) => a - b);
+
+      const newXP = alreadyCompleted ? prev.xp : prev.xp + rewardXP;
+
+      const priorDate = prev.lastStudyDate || (prev.expeditionLog?.length > 0 ? prev.expeditionLog[prev.expeditionLog.length - 1].date : null);
+      const newStreak = calculateUpdatedStreak(prev.streakDays, priorDate, today);
+
+      let newBadges = [...prev.badges];
+      let newBadgeDates = { ...prev.badgeDates };
+
+      if (badgeUnlock && !newBadges.includes(badgeUnlock.id)) {
+        newBadges.push(badgeUnlock.id);
+        newBadgeDates[badgeUnlock.id] = today;
+      }
+
+      let newTools = [...(currentEco.unlockedTools || [])];
+      if (toolUnlock && !newTools.some((t) => t.id === toolUnlock.id)) {
+        newTools.push(toolUnlock);
+      }
+
+      const newRestoration = Math.min(
+        100,
+        Math.max(
+          currentEco.restorationPercent,
+          Math.round((newCompleted.length / 6) * 100)
+        )
+      );
+
+      const nextMission = Math.min(6, missionNum + 1);
+
+      // If all 6 missions are finished, also ensure mission 4 is in completedMissions (Eco Woods mastered)
+      let newCompletedMissions = [...prev.completedMissions];
+      if (newCompleted.length >= 6 && !newCompletedMissions.includes(4)) {
+        newCompletedMissions.push(4);
+      }
+
+      const newLog = alreadyCompleted
+        ? prev.expeditionLog
+        : [
+            ...prev.expeditionLog,
+            {
+              id: `forest_${missionNum}`,
+              title: `Eco Woods - Mission ${missionNum}`,
+              date: today,
+              xp: rewardXP,
+            },
+          ];
+
+      return {
+        ...prev,
+        xp: newXP,
+        streakDays: newStreak,
+        lastStudyDate: today,
+        badges: newBadges,
+        badgeDates: newBadgeDates,
+        expeditionLog: newLog,
+        completedMissions: newCompletedMissions,
+        ecoWoodsProgress: {
+          ...currentEco,
+          completedMissions: newCompleted,
+          currentMission: nextMission,
+          restorationPercent: newRestoration,
+          unlockedTools: newTools,
+        },
+      };
+    });
+  };
+
+  // -----------------------------
   // RESET PROGRESS
   // -----------------------------
 
@@ -1042,6 +1149,7 @@ export function GameStateProvider({ children }) {
         completeMission,
         completeUnderseaSublevel,
         updateDiverCustomization,
+        completeEcoWoodsMission,
         resetProgress,
       }}
     >

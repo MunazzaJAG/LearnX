@@ -15,8 +15,12 @@ export function DashboardView() {
       navigateTo("mission_lab", 1);
     } else if (!completedMissions?.includes(2)) {
       navigateTo("undersea_reef");
+    } else if (!completedMissions?.includes(3)) {
+      navigateTo("eco_woods");
+    } else if (!completedMissions?.includes(4)) {
+      navigateTo("living_forest");
     } else {
-      navigateTo("mission_lab", currentMissionId || 3);
+      navigateTo("eco_woods");
     }
   };
 
@@ -29,6 +33,10 @@ export function DashboardView() {
     ? "Level 1: Python Jumping Game"
     : !completedMissions?.includes(2)
     ? "Level 2: 3D Undersea Reef Experience"
+    : !completedMissions?.includes(3)
+    ? "Eco Woods: Wildwood Sanctuary"
+    : !completedMissions?.includes(4)
+    ? "Eco Woods: The Living Forest 3D"
     : currentMission.subtitle.toLowerCase();
 
   return (

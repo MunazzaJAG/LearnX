@@ -47,7 +47,7 @@ export function PlayableWorld({ onComplete, biomeKey = "ocean", levelTitle = "Un
   const [activeQuestion, setActiveQuestion] = useState(null);
   const [questionFeedback, setQuestionFeedback] = useState("");
 
-  const pythonQuestions = [
+  const oceanQuestions = [
     {
       question: "What does print() do in Python?",
       options: ["Displays output", "Repeats a loop", "Creates a variable"],
@@ -85,6 +85,47 @@ export function PlayableWorld({ onComplete, biomeKey = "ocean", levelTitle = "Un
       explanation: "The if keyword lets Python make decisions.",
     },
   ];
+
+  const forestQuestions = [
+    {
+      question: "Which function converts text input into an integer in Python?",
+      options: ["int()", "str()", "float()"],
+      answer: "int()",
+      explanation: "int() converts text numbers like '10' into the integer 10.",
+    },
+    {
+      question: "What does input() return in Python?",
+      options: ["Always a string", "Always an integer", "Always a boolean"],
+      answer: "Always a string",
+      explanation: "input() pauses the program and always returns the user's typed response as a string.",
+    },
+    {
+      question: "Which operator checks if two values are equal in Python?",
+      options: ["==", "=", "!="],
+      answer: "==",
+      explanation: "The == operator tests equality, while = is used for variable assignment.",
+    },
+    {
+      question: "What does the expression 85 >= 70 evaluate to?",
+      options: ["True", "False", "None"],
+      answer: "True",
+      explanation: "85 is greater than or equal to 70, so it evaluates to True.",
+    },
+    {
+      question: "Which keyword introduces an alternative branch in an if-statement?",
+      options: ["elif", "while", "for"],
+      answer: "elif",
+      explanation: "elif (short for else if) tests an additional condition if the preceding if was False.",
+    },
+    {
+      question: "What does range(5) generate when iterated in a loop?",
+      options: ["0, 1, 2, 3, 4", "1, 2, 3, 4, 5", "5, 5, 5, 5, 5"],
+      answer: "0, 1, 2, 3, 4",
+      explanation: "range(5) produces numbers from 0 up to 4 (5 numbers in total).",
+    },
+  ];
+
+  const pythonQuestions = biomeKey === "forest" ? forestQuestions : oceanQuestions;
 
   const handlePythonAnswer = (option) => {
     const scene = gameRef.current?.scene.getScene("LearnXWorld");
@@ -166,27 +207,28 @@ export function PlayableWorld({ onComplete, biomeKey = "ocean", levelTitle = "Un
         this.physics.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT + 150, true, true, true, false);
         this.physics.world.checkCollision.down = false;
         this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
-        this.cameras.main.setBackgroundColor("#EAF7F0");
+        const isForest = biomeKey === "forest";
+        this.cameras.main.setBackgroundColor(isForest ? "#EBF5EE" : "#EAF7F0");
 
-        // Soft hills / undersea dunes
+        // Soft hills / dunes
         const hills = this.add.graphics();
-        hills.fillStyle(0xD7EEDC, 1);
+        hills.fillStyle(isForest ? 0xC8E6C9 : 0xD7EEDC, 1);
         hills.fillEllipse(250, 445, 650, 210);
-        hills.fillStyle(0xBDE3CF, 1);
+        hills.fillStyle(isForest ? 0xA5D6A7 : 0xBDE3CF, 1);
         hills.fillEllipse(800, 460, 850, 200);
-        hills.fillStyle(0xCDE9D7, 1);
+        hills.fillStyle(isForest ? 0x81C784 : 0xCDE9D7, 1);
         hills.fillEllipse(1390, 445, 650, 220);
 
-        // Undersea hazard trench drop-off between platforms (x=480 to x=1120)
+        // Undersea hazard trench / river drop-off between platforms (x=480 to x=1120)
         const trench = this.add.graphics();
-        trench.fillStyle(0x0C3B35, 0.4);
+        trench.fillStyle(isForest ? 0x2D4A3E : 0x0C3B35, 0.4);
         trench.fillRect(480, 435, 640, 45);
         for (let tx = 510; tx < 1100; tx += 45) {
-          trench.fillStyle(0x56CFE1, 0.6);
+          trench.fillStyle(isForest ? 0x52B788 : 0x56CFE1, 0.6);
           trench.fillCircle(tx, 455, (tx % 3) + 2);
         }
 
-        // Floating clouds / bubbles
+        // Floating clouds / pollen bubbles
         for (let i = 0; i < 10; i++) {
           const x = 100 + i * 155;
           const y = 55 + (i % 3) * 35;
@@ -201,7 +243,7 @@ export function PlayableWorld({ onComplete, biomeKey = "ocean", levelTitle = "Un
         const character = this.add.graphics();
         character.fillStyle(0xFFFFFF, 1);
         character.fillRoundedRect(5, 4, 34, 42, 12);
-        character.fillStyle(0x8BC9A5, 1);
+        character.fillStyle(isForest ? 0x52B788 : 0x8BC9A5, 1);
         character.fillRoundedRect(7, 19, 30, 26, 9);
         character.fillStyle(0xF2C8A5, 1);
         character.fillCircle(22, 13, 12);
@@ -235,9 +277,9 @@ export function PlayableWorld({ onComplete, biomeKey = "ocean", levelTitle = "Un
 
         platformData.forEach(([x, y, width, height]) => {
           const platform = this.add.rectangle(
-            x, y, width, height, 0x8BC9A5
+            x, y, width, height, isForest ? 0x40916C : 0x8BC9A5
           );
-          platform.setStrokeStyle(2, 0x6EAD8A);
+          platform.setStrokeStyle(2, isForest ? 0x2D6A4F : 0x6EAD8A);
           this.physics.add.existing(platform, true);
           this.platforms.push(platform);
           this.physics.add.collider(this.player, platform);

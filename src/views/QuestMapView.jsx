@@ -78,13 +78,20 @@ export function QuestMapView() {
       }
     }
 
-    // If mission is 3 or 4 (Eco Woods)
-    if (missionId === 3 || missionId === 4) {
-      const isLocked =
-        (missionId === 3 && !completedMissions.includes(2)) ||
-        (missionId === 4 && !completedMissions.includes(3));
+    // If mission is 3 (Eco Woods Level 1: Wildwood Sanctuary)
+    if (missionId === 3) {
+      const isLocked = !completedMissions.includes(2);
       if (!isLocked) {
-        navigateTo("mission_lab", missionId);
+        navigateTo("eco_woods");
+        return;
+      }
+    }
+
+    // If mission is 4 (Eco Woods Level 2: The Living Forest 3D)
+    if (missionId === 4) {
+      const isLocked = !completedMissions.includes(3);
+      if (!isLocked) {
+        navigateTo("living_forest");
         return;
       }
     }
@@ -157,25 +164,34 @@ export function QuestMapView() {
     }
   } else if (isForest) {
     actionButtonBg = "bg-[#2D6A4F] hover:bg-[#1F4F39]";
+    const isForestL1Done = completedMissions.includes(3);
+    const isForestL2Done = completedMissions.includes(4);
+
     if (!isForestUnlocked) {
       biomeSubtitle = "Unlocks after Undersea Reef";
       statusText = "Locked";
       statusBg = "bg-[#F4F6F4] text-[#8C9C92]";
       isCardLocked = true;
-    } else if (isForestDone) {
-      biomeSubtitle = "Eco Woods · Complete";
+    } else if (isForestL1Done && isForestL2Done) {
+      biomeSubtitle = "Living Forest · Complete";
       statusText = "Completed";
       statusBg = "bg-[#E6F5EC] text-[#2A6B53]";
       actionLabel = "Revisit";
-      actionDestination = () => navigateTo("eco_woods");
+      actionDestination = () => navigateTo("living_forest");
+    } else if (isForestL1Done) {
+      biomeSubtitle = "Level 2 · The Living Forest";
+      statusText = "In progress";
+      statusBg = "bg-[#EAF5EE] text-[#2D6A4F]";
+      actionLabel = isSpecificBiome ? "Open" : "Resume";
+      actionDestination = () => navigateTo("living_forest");
     } else if (activeBiome === "forest") {
-      biomeSubtitle = "Level 3 · Data Sensors";
+      biomeSubtitle = "Level 1 · Wildwood Sanctuary";
       statusText = "In progress";
       statusBg = "bg-[#EAF5EE] text-[#2D6A4F]";
       actionLabel = "Resume";
       actionDestination = () => navigateTo("eco_woods");
     } else {
-      biomeSubtitle = "Level 3 · Data Sensors";
+      biomeSubtitle = "Level 1 · Wildwood Sanctuary";
       statusText = "Available";
       statusBg = "bg-[#EAF5EE] text-[#2D6A4F]";
       actionLabel = "Enter";
@@ -646,22 +662,72 @@ export function QuestMapView() {
                   <span>{completedMissions.includes(2) ? "Revisit Level 2: 3D Experience" : "Enter Level 2: 3D Experience"}</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
-              ) : activeMission.level > 2 ? (
-                <div className="space-y-2">
-                  <div className="p-3 bg-[#FFF9EE] border border-[#F6E5B8] rounded-xl text-xs text-[#8C621F] flex items-center gap-2">
-                    <Lock className="w-4 h-4 text-[#D97706] flex-shrink-0" />
-                    <span>Locked: Complete Undersea Reef to unlock this expedition chapter.</span>
+              ) : activeMission.level === 3 ? (
+                !completedMissions.includes(2) ? (
+                  <div className="space-y-2">
+                    <div className="p-3 bg-[#FFF9EE] border border-[#F6E5B8] rounded-xl text-xs text-[#8C621F] flex items-center gap-2">
+                      <Lock className="w-4 h-4 text-[#D97706] flex-shrink-0" />
+                      <span>Locked: Complete Undersea Reef to unlock Wildwood Sanctuary.</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setDrawerOpen(false);
+                        navigateTo("undersea_reef");
+                      }}
+                      className="w-full py-3.5 px-6 rounded-2xl bg-[#1E7268] hover:bg-[#15564E] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <span>Go to Undersea Reef (Level 2)</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
                   </div>
+                ) : (
                   <button
                     onClick={() => {
                       setDrawerOpen(false);
-                      navigateTo("mission_lab", 1);
+                      navigateTo("eco_woods");
                     }}
-                    className="w-full py-3.5 px-6 rounded-2xl bg-[#1E7268] hover:bg-[#15564E] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-3.5 px-6 rounded-2xl bg-[#2D6A4F] hover:bg-[#1F4F39] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <span>Go to Undersea Reef (Level 1)</span>
+                    <span>{isCompleted ? "Replay Level 1: Wildwood Sanctuary" : "Begin Level 1: Wildwood Sanctuary"}</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
+                )
+              ) : activeMission.level === 4 ? (
+                !completedMissions.includes(3) ? (
+                  <div className="space-y-2">
+                    <div className="p-3 bg-[#FFF9EE] border border-[#F6E5B8] rounded-xl text-xs text-[#8C621F] flex items-center gap-2">
+                      <Lock className="w-4 h-4 text-[#D97706] flex-shrink-0" />
+                      <span>Locked: Complete Wildwood Sanctuary to unlock The Living Forest.</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setDrawerOpen(false);
+                        navigateTo("eco_woods");
+                      }}
+                      className="w-full py-3.5 px-6 rounded-2xl bg-[#2D6A4F] hover:bg-[#1F4F39] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <span>Play Level 1: Wildwood Sanctuary</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setDrawerOpen(false);
+                      navigateTo("living_forest");
+                    }}
+                    className="w-full py-3.5 px-6 rounded-2xl bg-[#2D6A4F] hover:bg-[#1F4F39] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <span>{isCompleted ? "Revisit Level 2: The Living Forest" : "Enter Level 2: The Living Forest"}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                )
+              ) : activeMission.level > 4 ? (
+                <div className="space-y-2">
+                  <div className="p-3 bg-[#FFF9EE] border border-[#F6E5B8] rounded-xl text-xs text-[#8C621F] flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-[#D97706] flex-shrink-0" />
+                    <span>Locked: Complete prior expedition chapters to unlock.</span>
+                  </div>
                 </div>
               ) : (
                 <button
