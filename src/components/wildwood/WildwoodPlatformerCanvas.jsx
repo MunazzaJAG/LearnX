@@ -418,7 +418,7 @@ export function WildwoodPlatformerCanvas({
         p.x + p.width > plat.x &&
         p.x < plat.x + plat.w &&
         p.y + p.height >= plat.y &&
-        p.y + p.height <= plat.y + 24 &&
+        p.y + p.height <= plat.y + Math.max(30, p.vy * dt + 14) &&
         p.vy >= 0
       ) {
         p.y = plat.y - p.height;
@@ -532,17 +532,8 @@ export function WildwoodPlatformerCanvas({
     }
 
     // Check Nearest Mission Station
-    const stations = [
-      { num: 1, x: 420, y: 550, name: "Rusty the Fox", habitat: "Intake Clinic", task: "Diagnose Vitals (if/else)", barrierDesc: "Extend Broken Bridge" },
-      { num: 2, x: 960, y: 550, name: "Pip the Hare", habitat: "Mossy Burrow", task: "Assign Habitat (if/elif/else)", barrierDesc: "Sprout Spring Mushroom" },
-      { num: 3, x: 1500, y: 550, name: "Fern the Fawn", habitat: "Sunlit Meadow", task: "Pasture Clearance (and)", barrierDesc: "Unlock Turnstile Gate" },
-      { num: 4, x: 2120, y: 550, name: "Bramble the Hedgehog", habitat: "Storehouse", task: "Evening Feeding (for loop)", barrierDesc: "Power Canopy Elevator" },
-      { num: 5, x: 2700, y: 550, name: "Hoot the Owl", habitat: "Willow Pond", task: "Pantry Stockpile (lists)", barrierDesc: "Lower River Drawbridge" },
-      { num: 6, x: 3250, y: 550, name: "Ancient Portal", habitat: "Grand Plaza", task: "Final Sanctuary Audit", barrierDesc: "Activate Portal to Level 2" },
-    ];
-
     let foundStation = null;
-    for (const st of stations) {
+    for (const st of WILDWOOD_STATIONS) {
       const distX = Math.abs(p.x + p.width / 2 - st.x);
       const distY = Math.abs(p.y + p.height / 2 - st.y);
       if (distX < 90 && distY < 160) {
@@ -888,7 +879,7 @@ export function WildwoodPlatformerCanvas({
     }
 
     // Objective Floating Indicator above current mission station
-    const currentGoalStation = stations.find(s => s.num === activeMissionNum);
+    const currentGoalStation = WILDWOOD_STATIONS.find(s => s.num === activeMissionNum);
     if (currentGoalStation && !completedMissions.includes(activeMissionNum)) {
       const bobY = Math.sin(performance.now() * 0.006) * 6;
       ctx.save();
