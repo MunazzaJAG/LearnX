@@ -1,77 +1,65 @@
 export const LEVELS_DATA = [
   {
     level: 1,
-    title: "FIRST DAY",
-    subtitle: "print(), strings, and comments",
-    chapter: "CHAPTER 01 · THE AWAKENING",
+    title: "PYTHON JUMPING GAME",
+    subtitle: "Platform jumping & Python challenges",
+    chapter: "LEVEL 01 · THE AWAKENING",
     biome: "Ocean Teal",
     biomeKey: "ocean",
     biomeName: "Undersea Reef",
-    pythonDocTopic: "Built-in Functions (print), Strings (str) & Comments (#)",
+    pythonDocTopic: "Python Basics (print, variables, data types, conditions)",
     bloomsTaxonomy: "REMEMBER / UNDERSTAND / APPLY",
-    story: "You arrive at the NEXA Ocean Research Hub. The terminal is blank. NOVA, your companion, asks you to send the first message to the system.",
-    teach: "Python gives instructions to a computer. The print() function displays information on the screen. Text is written inside quotation marks. A comment begins with # and is ignored when Python runs the program.",
-    codeTemplate: "# First message to NEXA\nprint(\"Welcome to NEXA\")\nprint(\"System Status: Online\")\n# This is a comment",
-    challenge: "Restore communication with the NEXA Ocean Research Hub by sending your first Python messages.",
-    expectedOutput: "Welcome to NEXA\nSystem Status: Online",
+    story: "Explore the reef platforms, answer 6 Python challenges, collect memory stars, and enter the purple portal to restore the reef and unlock Level 2.",
+    teach: "Python gives instructions to a computer. The print() function displays output, variables store values, and conditionals make decisions.",
+    codeTemplate: "# Level 1: Undersea Reef Jumping Game\nprint(\"Reef Portal Active\")\n",
+    challenge: "Collect all 6 stars by answering the Python questions, then reach the completion portal.",
+    expectedOutput: "Reef Portal Active",
     hints: [
-      "Hint 1: Use print(\"...\") to display text on the terminal screen.",
-      "Hint 2: Enclose text in quotation marks, like \"Welcome to NEXA\".",
-      "Hint 3: Lines starting with # are comments and will not appear in the terminal output."
+      "Hint 1: Use WASD or Arrow Keys to navigate platforms and SPACE to jump.",
+      "Hint 2: Touching a star pauses physics and reveals a Python question.",
+      "Hint 3: Answer each question correctly to collect the star and activate the portal."
     ],
-    rewardXP: 50,
-    badge: { id: "first_line", name: "First Line", icon: "🌊", description: "Make the terminal speak. Complete mission 1: first day." },
-    novaTip: "Every line begins with curiosity. Let's light up this console.",
+    rewardXP: 100,
+    badge: { id: "first_line", name: "First Line", icon: "🌊", description: "Complete Level 1: Undersea Reef Python Jumping Game." },
+    novaTip: "Jump between platforms and collect every star. The 3D Undersea Reef awaits!",
     subLevels: [
       {
         id: 1,
-        title: "Predict the Transmission",
-        type: "analyze",
-        description: "Trace short Python snippets and predict the output before running."
+        title: "Platform Jumping & Star Gathering",
+        type: "game",
+        description: "Jump across platforms and answer Python questions."
       },
       {
         id: 2,
-        title: "Repair the Broken Terminal",
-        type: "apply",
-        description: "Diagnose and fix syntax errors in a malfunctioning terminal script."
-      },
-      {
-        id: 3,
-        title: "Write Your First Transmission",
-        type: "apply",
-        description: "Compose custom Python statements with your explorer name and comments."
-      },
-      {
-        id: 4,
-        title: "Boss Battle: Restore NEXA",
-        type: "create",
-        description: "Write three print statements to revive the NEXA Ocean Research Hub."
+        title: "The Completion Portal",
+        type: "mastery",
+        description: "Reach the purple portal with all 6 stars to unlock Level 2."
       }
     ]
   },
   {
     level: 2,
-    title: "IDENTITY",
-    subtitle: "Variables and basic data types",
-    chapter: "CHAPTER 01 · THE AWAKENING",
+    title: "3D UNDERSEA EXPERIENCE",
+    subtitle: "Interactive 3D ocean reef exploration & coding",
+    chapter: "LEVEL 02 · 3D WORLD",
     biome: "Ocean Teal",
     biomeKey: "ocean",
     biomeName: "Undersea Reef",
-    pythonDocTopic: "Built-in Types (str, int, float, bool) & Variable Assignment (=)",
+    pythonDocTopic: "3D Diver Navigation, Telemetry, and Sublevel Terminals",
     bloomsTaxonomy: "REMEMBER / UNDERSTAND / APPLY / CREATE",
-    story: "The terminal is online, but NEXA cannot identify its explorer. Save your player details in variables to create an identity card.",
+    story: "Dive into the full 3D interactive underwater reef. Pilot submarines, swim with marine life, customize your diving suit, and restore the undersea stations.",
     teach: "Variables store data values in memory using the assignment operator =. Python recognizes strings (str), integers (int), decimals (float), and booleans (bool). Print stored values by passing variable names to print().",
-    codeTemplate: "name = \"Alex\"\nage = 18\nxp = 50\nis_explorer = True\n\nprint(\"Name:\", name)\nprint(\"Age:\", age)\nprint(\"XP:\", xp)\nprint(\"Explorer:\", is_explorer)",
-    challenge: "Save your player details in variables to create an identity card and display them with clear labels.",
-    expectedOutput: "Name: Alex\nAge: 18\nXP: 50\nExplorer: True",
+    codeTemplate: "station_name = \"Station Delta\"\npower_level = 85\nprint(\"Station:\", station_name)\nprint(\"Power:\", power_level)",
+    challenge: "Explore the 3D underwater reef, visit the research stations, and execute Python code at each landmark.",
+    expectedOutput: "Station: Station Delta\nPower: 85",
     hints: [
-      "Hint 1: Use the '=' operator to store data, like name = \"Alex\".",
-      "Hint 2: Text uses quotes (\"Alex\"), whole numbers don't (18), and booleans are True or False.",
-      "Hint 3: Use print(\"Label:\", variable_name) to display formatted values."
+      "Hint 1: Swim towards the glowing research stations on the ocean floor.",
+      "Hint 2: Press E or click 'Open Terminal' when near a landmark to access its Python code editor.",
+      "Hint 3: Complete all 6 3D sublevels to achieve 100% reef restoration."
     ],
-    rewardXP: 50,
-    badge: { id: "identity_found", name: "Identity Found", icon: "🆔", description: "Save player details in variables to create an identity card. Complete mission 2: identity." },
-    novaTip: "Every developer has a story. Let's give yours a name and role in NEXA.",
+    rewardXP: 200,
+    badge: { id: "identity_found", name: "Deep Diver", icon: "🤿", description: "Explore the 3D Undersea Reef and restore the undersea research stations." },
+    novaTip: "Use your thrusters to glide through the coral formations and find each research station.",
     subLevels: [
       {
         id: 1,

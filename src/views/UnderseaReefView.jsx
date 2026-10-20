@@ -15,13 +15,16 @@ import {
   ArrowRight,
   ShieldCheck,
   CheckCircle2,
-  Play
+  Play,
+  Lock
 } from "lucide-react";
 
 export function UnderseaReefView() {
   const {
     underseaProgress,
     completeUnderseaSublevel,
+    completeMission,
+    completedMissions,
     updateDiverCustomization,
     navigateTo,
     xp,
@@ -170,7 +173,46 @@ export function UnderseaReefView() {
     setSelectedSublevelNum(nextNum);
   };
 
-  const isLevel1Mastered = currentSublevelNum >= 6 && celebrationData;
+  const isLevel2Mastered = currentSublevelNum >= 6 && celebrationData;
+
+  // Level 2 Progression Lock Guard: Level 1 must be completed first!
+  if (!completedMissions?.includes(1)) {
+    return (
+      <div className="relative w-full h-full min-h-screen bg-[#031525] text-white flex items-center justify-center p-6 z-50">
+        <div className="bg-[#0b1726] border-2 border-[#163857] rounded-[32px] p-8 max-w-lg w-full text-center space-y-6 shadow-2xl animate-scaleUp">
+          <div className="w-16 h-16 rounded-2xl bg-[#0e2742] border border-[#20d3d3]/30 flex items-center justify-center mx-auto text-[#38bdf8]">
+            <Lock className="w-8 h-8 text-[#f59e0b]" />
+          </div>
+          <div className="space-y-2">
+            <span className="text-[11px] font-mono font-bold tracking-widest text-[#f59e0b] uppercase bg-[#f59e0b]/10 border border-[#f59e0b]/30 px-3 py-1 rounded-full">
+              Level 2 Locked
+            </span>
+            <h2 className="text-2xl font-black text-white">
+              Undersea Reef: 3D Experience
+            </h2>
+            <p className="text-xs text-[#94a3b8] leading-relaxed">
+              To enter the 3D underwater reef, you must first complete <strong>Level 1: Python Jumping Game</strong> by answering the Python questions, collecting the stars, and stepping through the activation portal.
+            </p>
+          </div>
+          <div className="space-y-3 pt-2">
+            <button
+              onClick={() => navigateTo("mission_lab", 1)}
+              className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-[#059669] to-[#10b981] hover:from-[#047857] hover:to-[#059669] text-white font-black text-sm shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition-all"
+            >
+              <span>Play Level 1: Python Jumping Game</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => navigateTo("quest_map")}
+              className="w-full py-2.5 text-xs font-semibold text-[#64748b] hover:text-[#e2e8f0] transition-colors cursor-pointer"
+            >
+              Return to Quest Map
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-full overflow-hidden bg-[#031525]">
@@ -241,7 +283,7 @@ export function UnderseaReefView() {
 
             <div>
               <span className="text-[10px] font-mono font-bold tracking-widest text-[#34d399] uppercase bg-[#064e3b]/40 px-3 py-1 rounded-full border border-[#059669]/30">
-                {isLevel1Mastered ? "Biome Level 1 Mastered" : "Sublevel Restored"}
+                {isLevel2Mastered ? "Biome Level 2 Mastered" : "Sublevel Restored"}
               </span>
               <h2 className="text-xl font-black text-white tracking-tight mt-2">
                 {celebrationData.title}
@@ -287,18 +329,26 @@ export function UnderseaReefView() {
             </div>
 
             {/* Sublevel Action Buttons */}
-            {isLevel1Mastered ? (
+            {isLevel2Mastered ? (
               <div className="space-y-2">
                 <button
-                  onClick={() => navigateTo("quest_map")}
-                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#059669] to-[#10b981] hover:from-[#047857] hover:to-[#059669] text-white font-extrabold text-xs shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2 active:scale-95 transition-all"
+                  onClick={() => {
+                    completeMission(2, 200, {
+                      id: "identity_found",
+                      name: "Deep Diver",
+                      icon: "🤿",
+                      description: "Mastered Level 2: 3D Undersea Reef Experience",
+                    });
+                    navigateTo("quest_map");
+                  }}
+                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#059669] to-[#10b981] hover:from-[#047857] hover:to-[#059669] text-white font-extrabold text-xs shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer"
                 >
-                  <span>Return to Quest Map (Level 1 Complete)</span>
+                  <span>Return to Quest Map (Level 2 Complete)</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setCelebrationData(null)}
-                  className="w-full py-2.5 px-4 rounded-xl bg-[#071322] hover:bg-[#0f243a] text-[#94a3b8] hover:text-white font-medium text-xs transition-all"
+                  className="w-full py-2.5 px-4 rounded-xl bg-[#071322] hover:bg-[#0f243a] text-[#94a3b8] hover:text-white font-medium text-xs transition-all cursor-pointer"
                 >
                   Free Swim & Explore Reef
                 </button>
@@ -306,7 +356,7 @@ export function UnderseaReefView() {
             ) : (
               <button
                 onClick={handleNextSublevel}
-                className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#059669] to-[#10b981] hover:from-[#047857] hover:to-[#059669] text-white font-extrabold text-xs shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2 active:scale-95 transition-all"
+                className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#059669] to-[#10b981] hover:from-[#047857] hover:to-[#059669] text-white font-extrabold text-xs shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer"
               >
                 <span>Advance to Sublevel {Math.min(6, currentSublevelNum + 1)}</span>
                 <ArrowRight className="w-4 h-4" />

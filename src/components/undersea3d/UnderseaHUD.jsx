@@ -9,7 +9,8 @@ import {
   BookOpen,
   Lock,
   CheckCircle2,
-  Waves
+  Waves,
+  Gamepad2
 } from "lucide-react";
 import { ALL_UNDERSEA_SUBLEVELS } from "../../data/underseaCurriculum";
 
@@ -119,11 +120,11 @@ export function UnderseaHUD({
             {onOpenLearningLab && (
               <button
                 onClick={onOpenLearningLab}
-                className="hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#04121f]/90 hover:bg-[#08223a] border border-[#163857] hover:border-[#38bdf8]/50 text-[#94a3b8] hover:text-[#38bdf8] text-xs font-semibold backdrop-blur-md shadow-md transition-all active:scale-95"
-                title="Open NEXA Learning Lab: Interactive Theory & Quiz Exercises"
+                className="hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#04121f]/90 hover:bg-[#08223a] border border-[#163857] hover:border-[#38bdf8]/50 text-[#94a3b8] hover:text-[#38bdf8] text-xs font-semibold backdrop-blur-md shadow-md transition-all active:scale-95 cursor-pointer"
+                title="Replay Level 1: Python Jumping Game"
               >
-                <BookOpen className="w-3.5 h-3.5 text-[#38bdf8]" />
-                <span>Theory & Quiz</span>
+                <Gamepad2 className="w-3.5 h-3.5 text-[#38bdf8]" />
+                <span>Level 1: Jumping Game</span>
               </button>
             )}
           </div>
@@ -136,7 +137,7 @@ export function UnderseaHUD({
             </span>
             <span className="text-[#475569]">·</span>
             <span className="text-[#94a3b8] font-medium text-xs">
-              Expedition 01
+              Level 2 · 3D Experience
             </span>
           </div>
 
